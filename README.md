@@ -25,7 +25,7 @@ beat describes the number as a duration relative to the tempo.<br>
 Delimiters:<br>
 OPENBRACK = {<br>
 Starts a definition<br>
-CLOSEDBRACK = }<br>
+CLOSEBRACK = }<br>
 Ends a definition <br>
 NEWLINE = \n<br>
 Delimits parts of code<br>

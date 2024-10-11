@@ -4,14 +4,54 @@ def lexer(input_program):
     # first read in file
     try:
         with open(input_program, 'r') as program_body:
+            output: list = []
             # read the file one character at a time
             while True:
-                char = program_body.read(1)  # Read one character at a time
+                char = program_body.read(1)
+
                 if not char:
-                    break  # End of program
+                    break  # end of program
+
+                if char == ' ': #white space delimits tokens
+                    continue # move to next character
+
                 # first try to match delimiters
+                if char == '{':
+                    output.append("OPENBRACK")
+                    continue
+                elif char == '}':
+                    output.append("CLOSEBRACK")
+                    continue
+                elif char == '\n':
+                    output.append("NEWLINE")
+                    continue
+                elif char == ',':
+                    output.append("COMMA")
+                    continue
 
                 # then try to match keywords
+                #define
+                if char == 'd' or 'D':
+                    char = program_body.read(1)
+                    if char == 'e' or 'E':
+                        char = program_body.read(1)
+                        if char == 'f' or 'F':
+                            char = program_body.read(1)
+                            if char == 'i' or 'I':
+                                char = program_body.read(1)
+                                if char == 'n' or 'N':
+                                    char = program_body.read(1)
+                                    if char == 'e' or 'E':
+                                        char = program_body.read(1)
+                                        if char == ' ':
+                                            output.append("KEYWORD (Value = \"define\")")
+                                            continue
+                # tempo
+
+                # play
+
+                # generate 
+                # after getting generate you need to try matching a descirption literal , not an identifier
 
                 # then try to match types
 
