@@ -1,5 +1,28 @@
 import sys
 
+######## KEYWORDS ########
+KEYWORDS = [
+    "define",
+    "tempo",
+    "play",
+    "generate",
+]
+##########################
+
+
+
+def match_types():
+    print("TODO: match types not yet implemented")
+
+def match_literals():
+    print("TODO: match literals not yet implemented")
+
+def generate_literals():
+    print("TODO: generate literals not yet implemented")
+
+def handle_errors():
+    print("TODO: handle errors not yet implemented")
+
 def lexer(input_program):
     # first read in file
     try:
@@ -30,6 +53,14 @@ def lexer(input_program):
                     continue
 
                 # then try to match keywords
+
+                #####
+                # something we can do is have a list of keywords
+                # and then iterate through the list and check if the characters match
+                # and then we dont have to write out each one manually
+                # but we can do that later because we are just trying to get the basic functionality working
+                #####
+
                 #define
                 if char == 'd' or 'D':
                     char = program_body.read(1)
@@ -47,17 +78,64 @@ def lexer(input_program):
                                             output.append("KEYWORD (Value = \"define\")")
                                             continue
                 # tempo
+                
+                if char.lower() == 't':
+                    char = program_body.read(1)
+                    if char.lower() == 'e':
+                        char = program_body.read(1)
+                        if char.lower() == 'm':
+                            char = program_body.read(1)
+                            if char.lower() == 'p':
+                                char = program_body.read(1)
+                                if char.lower() == 'o':
+                                    char = program_body.read(1)
+                                    if char == ' ':
+                                        output.append("KEYWORD (Value = \"tempo\")")
+                                        continue                        
+
 
                 # play
 
-                # generate 
+                if char.lower() == 'p':
+                    char = program_body.read(1)
+                    if char.lower() == 'l':
+                        char = program_body.read(1)
+                        if char.lower() == 'a':
+                            char = program_body.read(1)
+                            if char.lower() == 'y':
+                                char = program_body.read(1)
+                                if char == ' ':
+                                    output.append("KEYWORD (Value = \"play\")")
+                                    continue
+
+                # generate
+                if char.lower() == 'g':
+                    char = program_body.read(1)
+                    if char.lower() == 'e':
+                        char = program_body.read(1)
+                        if char.lower() == 'n':
+                            char = program_body.read(1)
+                            if char.lower() == 'e':
+                                char = program_body.read(1)
+                                if char.lower() == 'r':
+                                    char = program_body.read(1)
+                                    if char.lower() == 'a':
+                                        char = program_body.read(1)
+                                        if char.lower() == 't':
+                                            char = program_body.read(1)
+                                            if char.lower() == 'e':
+                                                char = program_body.read(1)
+                                                if char == ' ':
+                                                    output.append("KEYWORD (Value = \"generate\")")
+                                                    continue
                 # after getting generate you need to try matching a descirption literal , not an identifier
-
+                generate_literals()
                 # then try to match types
-
+                match_types()
                 # then try to match literals (i think in the order of the grammar)
-
+                match_literals()
                 # catch any errors
+                handle_errors()
 
     except FileNotFoundError:
         print(f"Error: The program '{filename}' was not found.")
