@@ -4,23 +4,20 @@ def lexer(input_program):
     # first read in file
     try:
         with open(input_program, 'r') as program_body:
-            # read the file one word at a time
-            for line in program_body:
-                for token in line:
-                    # make sure the word is split correctly
-                    # for example, a token cannot have {, }, or , at the end
-                    # so seperate out the delimiters
+            # read the file one character at a time
+            while True:
+                char = program_body.read(1)  # Read one character at a time
+                if not char:
+                    break  # End of program
+                # first try to match delimiters
 
-                    # first try to match delimiters
+                # then try to match keywords
 
-                    # then try to match keywords
+                # then try to match types
 
-                    # then try to match types
+                # then try to match literals (i think in the order of the grammar)
 
-                    # then try to match literals (i think in the order of the grammar)
-
-                    # catch any errors
-                    pass
+                # catch any errors
 
     except FileNotFoundError:
         print(f"Error: The program '{filename}' was not found.")
