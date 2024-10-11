@@ -90,6 +90,9 @@ def lexer(input_program):
                                 if char.lower() == 'o':
                                     char = program_body.read(1)
                                     if char == ' ':
+                                        # would do error checking here because if there is
+                                        # something like 'tempoj' then it would throw an error
+                                        # like 'did you mean to type 'tempo' because its near a keyword'
                                         output.append("KEYWORD (Value = \"tempo\")")
                                         continue                        
 
