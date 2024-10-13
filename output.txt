@@ -1,33 +1,50 @@
 < KEYWORD , tempo >
-< NUMBER , 120 >
+< NUMBER , 600 >
 < NEWLINE >
 < NEWLINE >
 < KEYWORD , define >
 < KEYWORD , loop >
-< IDENTIFIER , bass >
-< OPENBRACK , { >
+< INSTRUMENT , bass >
+< OPENBRACK >
 < NEWLINE >
 < KEYWORD , instrument >
-< IDENTIFIER , bass >
+< INSTRUMENT , bass >
+< NEWLINE >
 < KEYWORD , note >
 < IDENTIFIER , a >
 < NUMBER , 1 >
 < KEYWORD , beat >
 < NEWLINE >
-< CLOSEBRACK , } >
+< CLOSEBRACK >
+< NEWLINE >
+< NEWLINE >
+< KEYWORD , define >
+< KEYWORD , loop >
+< IDENTIFIER , drums >
+< OPENBRACK >
+< NEWLINE >
+< KEYWORD , instrument >
+< INSTRUMENT , bass >
+< NEWLINE >
+< KEYWORD , note >
+< IDENTIFIER , a >
+< NUMBER , 1 >
+< KEYWORD , beat >
+< NEWLINE >
+< CLOSEBRACK >
 < NEWLINE >
 < NEWLINE >
 < KEYWORD , define >
 < KEYWORD , loop >
 < IDENTIFIER , hat >
-< OPENBRACK , { >
+< OPENBRACK >
 < NEWLINE >
 < KEYWORD , instrument >
-< IDENTIFIER , hihat >
+< INSTRUMENT , hihat >
 < NEWLINE >
 < IDENTIFIER , b >
 < NUMBER , 1 >
 < KEYWORD , beat >
 < NEWLINE >
-< CLOSEBRACK , } >
+< CLOSEBRACK >
 < NEWLINE >
