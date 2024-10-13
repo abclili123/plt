@@ -1,0 +1,11 @@
+tempo 120
+
+define loop bass {
+    instrument bass 
+    note a 1 beat
+}
+
+define loop hat {
+	instrument hihat
+	b 1 beat
+}

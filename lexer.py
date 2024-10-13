@@ -1,14 +1,18 @@
 import sys
+import re
 
-######## KEYWORDS ########
-KEYWORDS = [
-    "define",
-    "tempo",
-    "play",
-    "generate",
+######## TOKENS ########
+TOKENS = [
+    ('KEYWORD', r'\b(tempo|define|loop|instrument|note|beat)\b'),
+    ('IDENTIFIER', r'[a-zA-Z_][a-zA-Z0-9_]*'),
+    ('NUMBER', r'\d+'),
+    ('OPENBRACK', r'\{'),
+    ('CLOSEBRACK', r'\}'),
+    ('NEWLINE', r'\n'),
+    ('WHITESPACE', r'\s+'),
+    ('COMMA', r','),
 ]
 ##########################
-
 
 
 def match_types():
@@ -23,122 +27,61 @@ def generate_literals():
 def handle_errors():
     print("TODO: handle errors not yet implemented")
 
+def write_output_to_file(output):
+    with open("output.txt", "w") as output_file:
+            for token in output:
+                output_file.write(token + "\n")
+    print("Output written to output.txt")
+
 def lexer(input_program):
     # first read in file
     try:
         with open(input_program, 'r') as program_body:
-            output: list = []
-            # read the file one character at a time
-            while True:
-                char = program_body.read(1)
-
-                if not char:
-                    break  # end of program
-
-                if char == ' ': #white space delimits tokens
-                    continue # move to next character
-
-                # first try to match delimiters
-                if char == '{':
-                    output.append("OPENBRACK")
-                    continue
-                elif char == '}':
-                    output.append("CLOSEBRACK")
-                    continue
-                elif char == '\n':
-                    output.append("NEWLINE")
-                    continue
-                elif char == ',':
-                    output.append("COMMA")
-                    continue
-
-                # then try to match keywords
-
-                #####
-                # something we can do is have a list of keywords
-                # and then iterate through the list and check if the characters match
-                # and then we dont have to write out each one manually
-                # but we can do that later because we are just trying to get the basic functionality working
-                #####
-
-                #define
-                if char == 'd' or 'D':
-                    char = program_body.read(1)
-                    if char == 'e' or 'E':
-                        char = program_body.read(1)
-                        if char == 'f' or 'F':
-                            char = program_body.read(1)
-                            if char == 'i' or 'I':
-                                char = program_body.read(1)
-                                if char == 'n' or 'N':
-                                    char = program_body.read(1)
-                                    if char == 'e' or 'E':
-                                        char = program_body.read(1)
-                                        if char == ' ':
-                                            output.append("KEYWORD (Value = \"define\")")
-                                            continue
-                # tempo
+            output = []
+            # this is basically just reading entire program
+            # as string, then parsing it character by character
+            program_file = program_body.read()
+            cursor = 0
+            
+            # move cursor until EOF
+            while cursor < len(program_file):
+                matched = False
+                for token_name, token_pattern in TOKENS:
+                    # use re to match regex patterns in file
+                    match = re.match(token_pattern, program_file[cursor:])
+                    if match:
+                        # append token to output
+                        matched = True
+                        if token_name != 'WHITESPACE' and token_name != 'NEWLINE':
+                                output.append(f"< {token_name} , {match.group()} >")
+                        elif token_name == 'NEWLINE':
+                            output.append(f"< {token_name} >")
+                        
+                        # adjust pointer to end of last found token
+                        cursor += match.end()
+                        break
                 
-                if char.lower() == 't':
-                    char = program_body.read(1)
-                    if char.lower() == 'e':
-                        char = program_body.read(1)
-                        if char.lower() == 'm':
-                            char = program_body.read(1)
-                            if char.lower() == 'p':
-                                char = program_body.read(1)
-                                if char.lower() == 'o':
-                                    char = program_body.read(1)
-                                    if char == ' ':
-                                        # would do error checking here because if there is
-                                        # something like 'tempoj' then it would throw an error
-                                        # like 'did you mean to type 'tempo' because its near a keyword'
-                                        output.append("KEYWORD (Value = \"tempo\")")
-                                        continue                        
+                if not matched:
+                    # here we should also do finer error checking
+                    # for example, if a found token is not in grammar but
+                    # close due to spelling error, like loopf or tempo1, 
+                    # we should throw an error with edit suggestion
+                    output.append(f"ERROR: Unexpected character '{program_file[cursor]}'")
+                    cursor += 1
+                
 
-
-                # play
-
-                if char.lower() == 'p':
-                    char = program_body.read(1)
-                    if char.lower() == 'l':
-                        char = program_body.read(1)
-                        if char.lower() == 'a':
-                            char = program_body.read(1)
-                            if char.lower() == 'y':
-                                char = program_body.read(1)
-                                if char == ' ':
-                                    output.append("KEYWORD (Value = \"play\")")
-                                    continue
-
-                # generate
-                if char.lower() == 'g':
-                    char = program_body.read(1)
-                    if char.lower() == 'e':
-                        char = program_body.read(1)
-                        if char.lower() == 'n':
-                            char = program_body.read(1)
-                            if char.lower() == 'e':
-                                char = program_body.read(1)
-                                if char.lower() == 'r':
-                                    char = program_body.read(1)
-                                    if char.lower() == 'a':
-                                        char = program_body.read(1)
-                                        if char.lower() == 't':
-                                            char = program_body.read(1)
-                                            if char.lower() == 'e':
-                                                char = program_body.read(1)
-                                                if char == ' ':
-                                                    output.append("KEYWORD (Value = \"generate\")")
-                                                    continue
+                
                 # after getting generate you need to try matching a descirption literal , not an identifier
-                generate_literals()
+                # generate_literals()
                 # then try to match types
-                match_types()
+                # match_types()
                 # then try to match literals (i think in the order of the grammar)
-                match_literals()
+                # match_literals()
                 # catch any errors
-                handle_errors()
+                # handle_errors()
+        
+        write_output_to_file(output)
+       
 
     except FileNotFoundError:
         print(f"Error: The program '{filename}' was not found.")

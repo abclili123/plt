@@ -1,0 +1,33 @@
+< KEYWORD , tempo >
+< NUMBER , 120 >
+< NEWLINE >
+< NEWLINE >
+< KEYWORD , define >
+< KEYWORD , loop >
+< IDENTIFIER , bass >
+< OPENBRACK , { >
+< NEWLINE >
+< KEYWORD , instrument >
+< IDENTIFIER , bass >
+< KEYWORD , note >
+< IDENTIFIER , a >
+< NUMBER , 1 >
+< KEYWORD , beat >
+< NEWLINE >
+< CLOSEBRACK , } >
+< NEWLINE >
+< NEWLINE >
+< KEYWORD , define >
+< KEYWORD , loop >
+< IDENTIFIER , hat >
+< OPENBRACK , { >
+< NEWLINE >
+< KEYWORD , instrument >
+< IDENTIFIER , hihat >
+< NEWLINE >
+< IDENTIFIER , b >
+< NUMBER , 1 >
+< KEYWORD , beat >
+< NEWLINE >
+< CLOSEBRACK , } >
+< NEWLINE >
