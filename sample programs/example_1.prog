@@ -1,4 +1,4 @@
-tempo 600
+tempo 120
 
 define loop bass {
     instrument bass 
@@ -14,3 +14,12 @@ define loop hat {
 	instrument hihat
 	b 1 beat
 }
+
+group drum_kit{
+    bass
+    hat
+    bass
+    snare
+}
+
+play drum_kit

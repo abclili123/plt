@@ -7,6 +7,7 @@ KEYWORDS = [
     "play",
     "generate",
     "loop",
+    "segment",
     "instrument",
     "note",
     "beat",
