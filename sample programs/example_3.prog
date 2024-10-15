@@ -2,8 +2,8 @@ tempo 100
 
 play loop background_piano {
     instrument piano
-    generate chord happy 4 beats
-    generate chord sad 4 beats
+    generate happy chord 4 beats
+    generate sad chord 4 beats
 }
 
 play loop guitar {
