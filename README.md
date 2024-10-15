@@ -19,7 +19,7 @@ TYPE_INSTRUMENT = instrument<br>
 instrument is a reserved type used to denote that the next token is the instrument to be played in that part<br>
 TYPE_SOUND = chord | note<br>
 chord and note are types of sounds that instruments can play<br>
-TYPE_TIME = beat <br>
+TYPE_TIME = beat | beats <br>
 beat describes the number as a duration relative to the tempo.<br>
 <br>
 Delimiters:<br>
@@ -42,5 +42,5 @@ TIME_LITERAL = [0-9]+ | [0-9]+ .? [0-9]+<br>
 This follows tempo and beat to describe an amount of time. Tempo is in beats per minute and beat is relative to the program’s tempo. It can be a whole number or float<br>
 DESCRIPTION_LITERAL = [a-zA-Z]+<br>
 A one word description to describe the desired chord to generate.<br>
-IDENTIFIER = [a-zA-Z][a-zA-Z0-9]*<br>
+IDENTIFIER = [a-zA-Z][a-zA-Z0-9_]*<br>
 Used to identify loops, segments, and groups<br>
