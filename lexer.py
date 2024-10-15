@@ -166,35 +166,89 @@ def lexer(input_program):
                                          )
                         result = ""
                         if type(token) == tuple:
-                            token = token[0] 
-                            result = token[1]
+                            token, result = token
 
                         # if result is generate and delim is whitespace
                         # need next token to match a decription literal
                         if result == "generate" and delim == "WHITESPACE":
                             output.append(token)
-                            buffer == ""
+                            buffer = ""
                             # forward buffer to the next delimiter
-                            # match buffer against decription literal
-                            token = match_description_literal(buffer)
+                            char = program_body.read(1)
+                            buffer += char
+                            delim = match_delimiter(char)
+                            while not delim:
+                                char = program_body.read(1)
+                                if not char:  # EOF
+                                    break
+                                delim = match_delimiter(char)
+                                if not delim:
+                                    buffer += char
+
+                            if buffer:
+                                # match buffer against decription literal
+                                token = match_description_literal(buffer)
+                        
+                        if result == "loop" or result =="segement" and delim == "WHITESPACE":
+                            output.append(token)
+                            buffer = ""
+                            # forward buffer to the next delimiter
+                            char = program_body.read(1)
+                            buffer += char
+                            delim = match_delimiter(char)
+                            while not delim:
+                                char = program_body.read(1)
+                                if not char:  # EOF
+                                    break
+                                delim = match_delimiter(char)
+                                if not delim:
+                                    buffer += char
+
+                            if buffer:
+                                # match buffer against identifier
+                                token = match_identifier(buffer)
 
                         # if the result is note and delim is whitespace
                         # need the next token to match a note literal
                         elif result == "note" and delim == "WHITESPACE":
                             output.append(token)
-                            buffer == ""
+                            buffer = ""
                             # forward buffer to the next delimiter
-                            # match buffer against note_literal
-                            token = match_note_literal(buffer)
+                            char = program_body.read(1)
+                            buffer += char
+                            delim = match_delimiter(char)
+                            while not delim:
+                                char = program_body.read(1)
+                                if not char:  # EOF
+                                    break
+                                delim = match_delimiter(char)
+                                if not delim:
+                                    buffer += char
+
+                            if buffer:
+                                # match buffer against note literal
+                                token = match_note_literal(buffer)
 
                         # if the result is chord and delim is whitespace
                         # need the next token to match a note literal
                         elif result == "chord" and delim == "WHITESPACE":
                             output.append(token)
-                            buffer == ""
+                            buffer = ""
                             # forward buffer to the next delimiter
-                            # match buffer against chord_literal
-                            token = match_chord_literal(buffer)
+                            char = program_body.read(1)
+                            buffer += char
+                            delim = match_delimiter(char)
+                            while not delim:
+                                char = program_body.read(1)
+                                if not char:  # EOF
+                                    break
+                                delim = match_delimiter(char)
+                                if not delim:
+                                    buffer += char
+
+                            if buffer:
+                                # match buffer against chord_literal
+                                token = match_chord_literal(buffer)
 
                         # match tokens as normal
                         if not token:
