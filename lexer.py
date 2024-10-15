@@ -200,6 +200,8 @@ def lexer(input_program):
                                 # match buffer against decription literal
                                 token = match_description_literal(buffer)
                         
+                        # if result is a part and delim is whitespace
+                        # need next token to match an identifier
                         if result == "loop" or result =="segement" and delim == "WHITESPACE":
                             output.append(token)
                             buffer = ""
