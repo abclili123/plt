@@ -36,7 +36,7 @@ Literals:<br>
 INSTRUMENT_LITERAL = piano | guitar | horn | bass | snare | hihat<br>
 NOTE_LITERAL = [A-Ga-g][# + b]?[1-7]?<br>
 A note is a single, predefined frequency played by an instrument. In music, notes are letters A-G, they can be sharp, flat, or neither, and they can optionally have an octave.<br>
-CHORD_LITERAL = [A-Ga-g][# + b]?[1-7]?[minor]?<br>
+CHORD_LITERAL = [A-Ga-g][# + b]?[1-7]?[m]?<br>
 A chord is a predefined group of notes. Similar logic to notes applies, however chords can be major or minor. It is standard to assume the chord is major if not noted as minor.<br>
 TIME_LITERAL = [0-9]+ | [0-9]+ .? [0-9]+<br>
 This follows tempo and beat to describe an amount of time. Tempo is in beats per minute and beat is relative to the program’s tempo. It can be a whole number or float<br>

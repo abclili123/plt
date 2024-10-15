@@ -70,52 +70,63 @@ def match_instrument(buffer):
     return False
 
 def match_note_literal(buffer):
-    # Valid lengths for a note are 1 (e.g., A) or 2-3 (e.g., A4, C#5)
-    if len(buffer) < 1 or len(buffer) > 3:
-        return False  # Invalid length for a note
-
-    # Extract components
-    note = buffer[0]
-    accidental = buffer[1] if len(buffer) > 1 and buffer[1] in ['#', 'b'] else ''
-    octave = buffer[1] if len(buffer) == 2 and buffer[1].isdigit() else buffer[2] if len(buffer) == 3 else ''
-
-    # Check if the note is valid (A-G or a-g)
-    if note in "ABCDEFGabcdefg":
-        if octave == '' or (octave.isdigit() and 1 <= int(octave) <= 7):
+    # if it is one char then it is just a note wihtout an accidental and assumed 4th octave
+    if len(buffer) == 1:
+        note = buffer[0]
+        if note in "ABCDEFGabcdefg":
             return f"< NOTE_LITERAL , {buffer} >"
-
+    
+    # if it is two char it can be a note followed be an accidental or an octave
+    elif len(buffer) == 2: # a4, a#
+        note = buffer[0] in "ABCDEFGabcdefg"
+        accidental = buffer[1] in ['#', 'b']
+        octave = buffer[1].isdigit()
+        if note and (accidental or octave):
+            return f"< NOTE_LITERAL , {buffer} >"
+    
+    # if it is 3 char it can be a note followed be an accidental and an octave
+    elif len(buffer) == 3:
+        note = buffer[0] in "ABCDEFGabcdefg"
+        accidental = buffer[1] in ['#', 'b']
+        octave = buffer[2].isdigit()
+        if note and accidental and octave:
+            return f"< NOTE_LITERAL , {buffer} >"
+        
     return False
 
 def match_chord_literal(buffer):
-    # Valid lengths for a chord are 1 (e.g., a), 2 (e.g., a#), 3-5 (e.g., a#m, a#minor)
-    if len(buffer) < 1 or len(buffer) > 5:
-        return False  # Invalid length for a chord
-
-    note = buffer[0]
-    accidental = buffer[1] if len(buffer) > 1 and buffer[1] in ['#', 'b'] else ''
-    is_minor = buffer.endswith('m') or buffer.endswith('minor')
-
-    # Check if the note is valid (A-G or a-g)
-    if note in "ABCDEFGabcdefg":
-        # If minor designation is present
-        if is_minor:
-            if accidental and len(buffer) == 3:  # Valid case like "a#m"
-                return f"< CHORD_LITERAL , {buffer} >"
-            elif buffer == note + 'minor' and len(buffer) == 6:  # Valid case like "aminor"
-                return f"< CHORD_LITERAL , {buffer} >"
-            elif accidental == '' and len(buffer) == 2:  # Valid case like "am"
-                return f"< CHORD_LITERAL , {buffer} >"
-        
-        # Determine the octave if it exists
-        octave = buffer[2] if len(buffer) == 3 and buffer[2].isdigit() else ''
-        if octave == '' and len(buffer) > 2 and accidental and len(buffer) == 4:
-            octave = buffer[3]  # e.g., "C#3"
-
-        # Validate octave if present
-        if octave == '' or (octave.isdigit() and 1 <= int(octave) <= 7):
-            # Form the chord literal without "minor"
+    # if it is one char then it is just a note wihtout an accidental and assumed 4th octave and major
+    if len(buffer) == 1:
+        note = buffer[0]
+        if note in "ABCDEFGabcdefg":
             return f"< CHORD_LITERAL , {buffer} >"
+    
+    # if it is two char it can be a note followed be an accidental or an octave or a minor
+    elif len(buffer) == 2: # a4, a#
+        note = buffer[0] in "ABCDEFGabcdefg"
+        accidental = buffer[1] in ['#', 'b']
+        octave = buffer[1].isdigit()
+        minor = buffer[1] == "m"
+        if note and (accidental or octave or minor):
+            return f"< CHORD_LITERAL , {buffer} >"
+    
+    # if it is 3 char it can be a note followed be 2 of the following accidental, octave, minor
+    elif len(buffer) == 3:
+        note = buffer[0] in "ABCDEFGabcdefg"
 
+        # accidental in 1, octave in 2
+        # accidental in 1, minor in 2
+        accidental = buffer[1] in ['#', 'b']
+        octave = buffer[2].isdigit()
+        minor = buffer[2] == "m"
+        if note and accidental and (octave or minor):
+            return f"< CHORD_LITERAL , {buffer} >"
+        
+        # octave in 1, minor in 2
+        octave = buffer[1].isdigit()
+        if note and octave and minor:
+            return f"< CHORD_LITERAL , {buffer} >"
+        
     return False
 
 def match_time_literal(buffer):
@@ -123,7 +134,7 @@ def match_time_literal(buffer):
         return f"< TIME_LITERAL , {buffer} >"
     elif '.' in buffer:
         parts = buffer.split('.')
-        if len(parts) == 2 and all(part.isdigit() for part in parts):
+        if len(parts) == 2 and all(part.isdigit() or part == "" for part in parts):
             return f"< TIME_LITERAL , {buffer} >"
     return False
 
@@ -161,9 +172,9 @@ def lexer(input_program):
                     if buffer:
                         # first match keyword type and instrument
                         token = (match_keyword(buffer) or 
-                                         match_type(buffer) or 
-                                         match_instrument(buffer)
-                                         )
+                                 match_type(buffer) or 
+                                 match_instrument(buffer)
+                                 )
                         result = ""
                         if type(token) == tuple:
                             token, result = token
