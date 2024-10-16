@@ -1,0 +1,68 @@
+< KEYWORD , tempo >
+< TIME_LITERAL , 120 >
+< NEWLINE >
+< NEWLINE >
+< KEYWORD , define >
+< TYPE_PART , {loop} >
+< IDENTIFIER , bass >
+< OPENBRACK >
+< NEWLINE >
+< TYPE_INSTRUMENT >
+< INSTRUMENT_LITERAL , bass >
+< NEWLINE >
+< TYPE_SOUND, {note} >
+< NOTE_LITERAL , a >
+< TIME_LITERAL , 1 >
+< TYPE_TIME, {beat} >
+< NEWLINE >
+< CLOSEBRACK >
+< NEWLINE >
+< NEWLINE >
+< KEYWORD , define >
+< TYPE_PART , {loop} >
+< IDENTIFIER , drums >
+< OPENBRACK >
+< NEWLINE >
+< TYPE_INSTRUMENT >
+< INSTRUMENT_LITERAL , bass >
+< NEWLINE >
+< TYPE_SOUND, {note} >
+< NOTE_LITERAL , a >
+< TIME_LITERAL , 1 >
+< TYPE_TIME, {beat} >
+< NEWLINE >
+< CLOSEBRACK >
+< NEWLINE >
+< NEWLINE >
+< KEYWORD , define >
+< TYPE_PART , {loop} >
+< IDENTIFIER , hat >
+< OPENBRACK >
+< NEWLINE >
+< TYPE_INSTRUMENT >
+< INSTRUMENT_LITERAL , hihat >
+< NEWLINE >
+< NOTE_LITERAL , b >
+< TIME_LITERAL , 1 >
+< TYPE_TIME, {beat} >
+< NEWLINE >
+< CLOSEBRACK >
+< NEWLINE >
+< NEWLINE >
+< TYPE_GROUP >
+< IDENTIFIER , drum_kit >
+< OPENBRACK >
+< NEWLINE >
+< INSTRUMENT_LITERAL , bass >
+< NEWLINE >
+< IDENTIFIER , hat >
+< NEWLINE >
+< INSTRUMENT_LITERAL , bass >
+< NEWLINE >
+< INSTRUMENT_LITERAL , snare >
+< NEWLINE >
+< CLOSEBRACK >
+< NEWLINE >
+< NEWLINE >
+< KEYWORD , play >
+< IDENTIFIER , drum_kit >

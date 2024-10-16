@@ -1,0 +1,92 @@
+< KEYWORD , tempo >
+< TIME_LITERAL , 100 >
+< NEWLINE >
+< NEWLINE >
+< KEYWORD , play >
+< TYPE_PART , {loop} >
+< IDENTIFIER , background_piano >
+< OPENBRACK >
+< NEWLINE >
+< TYPE_INSTRUMENT >
+< INSTRUMENT_LITERAL , piano >
+< NEWLINE >
+< KEYWORD , generate >
+< DESCRIPTION_LITERAL , happy >
+< TYPE_SOUND, {chord} >
+< TIME_LITERAL , 4 >
+< TYPE_TIME, {beats} >
+< NEWLINE >
+< KEYWORD , generate >
+< DESCRIPTION_LITERAL , sad >
+< TYPE_SOUND, {chord} >
+< TIME_LITERAL , 4 >
+< TYPE_TIME, {beats} >
+< NEWLINE >
+< CLOSEBRACK >
+< NEWLINE >
+< NEWLINE >
+< KEYWORD , play >
+< TYPE_PART , {loop} >
+< IDENTIFIER , guitar >
+< OPENBRACK >
+< NEWLINE >
+< TYPE_INSTRUMENT >
+< INSTRUMENT_LITERAL , guitar >
+< NEWLINE >
+< TYPE_SOUND, {note} >
+< NOTE_LITERAL , a >
+< TIME_LITERAL , 1 >
+< TYPE_TIME, {beat} >
+< NEWLINE >
+< TYPE_SOUND, {note} >
+< NOTE_LITERAL , g# >
+< TIME_LITERAL , 0.25 >
+< TYPE_TIME, {beat} >
+< NEWLINE >
+< TYPE_SOUND, {note} >
+< NOTE_LITERAL , f >
+< TIME_LITERAL , 0.25 >
+< TYPE_TIME, {beat} >
+< NEWLINE >
+< TYPE_SOUND, {note} >
+< NOTE_LITERAL , eb >
+< TIME_LITERAL , 0.25 >
+< TYPE_TIME, {beat} >
+< NEWLINE >
+< TYPE_SOUND, {note} >
+< NOTE_LITERAL , b >
+< TIME_LITERAL , 0.25 >
+< TYPE_TIME, {beat} >
+< NEWLINE >
+< TYPE_SOUND, {note} >
+< NOTE_LITERAL , c >
+< TIME_LITERAL , 2 >
+< TYPE_TIME, {beats} >
+< NEWLINE >
+< TYPE_SOUND, {note} >
+< NOTE_LITERAL , d# >
+< TIME_LITERAL , 1 >
+< TYPE_TIME, {beat} >
+< NEWLINE >
+< CLOSEBRACK >
+< NEWLINE >
+< NEWLINE >
+< KEYWORD , play >
+< TYPE_PART , {loop} >
+< IDENTIFIER , four_on_the_floor >
+< OPENBRACK >
+< NEWLINE >
+< TYPE_INSTRUMENT >
+< INSTRUMENT_LITERAL , bass >
+< NEWLINE >
+< TYPE_SOUND, {note} >
+< NOTE_LITERAL , a >
+< TIME_LITERAL , 1 >
+< TYPE_TIME, {beat} >
+< NEWLINE >
+< TYPE_SOUND, {note} >
+< NOTE_LITERAL , b >
+< TIME_LITERAL , 1 >
+< TYPE_TIME, {beat} >
+< NEWLINE >
+< CLOSEBRACK >

@@ -1,0 +1,68 @@
+< KEYWORD , tempo >
+< TIME_LITERAL , 80 >
+< NEWLINE >
+< NEWLINE >
+< KEYWORD , define >
+< TYPE_PART , {loop} >
+< IDENTIFIER , foo >
+< OPENBRACK >
+< NEWLINE >
+< TYPE_INSTRUMENT >
+< INSTRUMENT_LITERAL , piano >
+< NEWLINE >
+< TYPE_SOUND, {note} >
+< NOTE_LITERAL , a >
+< TIME_LITERAL , 1 >
+< TYPE_TIME, {beat} >
+< NEWLINE >
+< TYPE_SOUND, {note} >
+< NOTE_LITERAL , a >
+< COMMA >
+< TYPE_SOUND, {chord} >
+< CHORD_LITERAL , d >
+< TIME_LITERAL , 2 >
+< TYPE_TIME, {beats} >
+< NEWLINE >
+< KEYWORD , rest >
+< TIME_LITERAL , 1 >
+< TYPE_TIME, {beat} >
+< NEWLINE >
+< CLOSEBRACK >
+< NEWLINE >
+< NEWLINE >
+< KEYWORD , define >
+< TYPE_PART , {segment} >
+< IDENTIFIER , solo >
+< OPENBRACK >
+< NEWLINE >
+< TYPE_INSTRUMENT >
+< INSTRUMENT_LITERAL , guitar >
+< NEWLINE >
+< TYPE_SOUND, {note} >
+< NOTE_LITERAL , a >
+< TIME_LITERAL , 1 >
+< TYPE_TIME, {beat} >
+< NEWLINE >
+< TYPE_SOUND, {note} >
+< NOTE_LITERAL , b >
+< TIME_LITERAL , 1 >
+< TYPE_TIME, {beat} >
+< NEWLINE >
+< TYPE_SOUND, {note} >
+< NOTE_LITERAL , c >
+< TIME_LITERAL , 1 >
+< TYPE_TIME, {beat} >
+< NEWLINE >
+< TYPE_SOUND, {note} >
+< NOTE_LITERAL , d >
+< TIME_LITERAL , 1 >
+< TYPE_TIME, {beat} >
+< NEWLINE >
+< CLOSEBRACK >
+< NEWLINE >
+< NEWLINE >
+< KEYWORD , play >
+< IDENTIFIER , foo >
+< COMMA >
+< IDENTIFIER , solo >
+< NEWLINE >
