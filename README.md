@@ -5,7 +5,8 @@ Dan Itzer, Liliana Seoror<br>
 
 Installation and Execution Instructions<br>
 Ensure the any version of python3 is installed on your machine<br>
-Run the script with the input program?
+Ensure the build script has the proper permissions: chmod +x build.sh<br>
+Run the script as ./build.sh <input_filename> <output_filename> <br>
 
 Language summary:<br>
 
