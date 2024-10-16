@@ -150,13 +150,13 @@ def match_identifier(buffer):
 
 #############################
 
-def write_output_to_file(output):
-    with open("output.txt", "w") as output_file:
+def write_output_to_file(output, filename):
+    with open(filename, "w") as output_file:
         for token in output:
             output_file.write(token + "\n")
-    print("Output written to output.txt")
+    print(f"Output written to {filename}")
 
-def lexer(input_program):
+def lexer(input_program, output_file):
     try:
         with open(input_program, 'r') as program_body:
             output = []
@@ -310,7 +310,7 @@ def lexer(input_program):
                     handle_error(buffer)
                     output.append(f"< ERROR , Unrecognized token '{buffer}' >")
 
-        write_output_to_file(output)
+        write_output_to_file(output, output_file)
 
     except FileNotFoundError:
         print(f"Error: The program '{input_program}' was not found.")
@@ -318,8 +318,10 @@ def lexer(input_program):
         print(f"Error reading file: {e}")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python lexer.py <filename>")
+    if len(sys.argv) != 3:
+        print("Usage: python lexer.py <input_filename> <output_filename>")
     else:
-        filename = sys.argv[1]
-        lexer(filename)
+        input_file = sys.argv[1]
+        output_file = sys.argv[2]
+        print(f"Parsing {input_file}")
+        lexer(input_file, output_file)
