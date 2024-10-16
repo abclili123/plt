@@ -1,5 +1,12 @@
 # plt project
 
+Team members:<br>
+Dan Itzer, Liliana Seoror<br>
+
+Installation and Execution Instructions<br>
+Ensure the any version of python3 is installed on your machine<br>
+Run the script with the input program?
+
 Language summary:<br>
 
 Lexical Grammar:<br>
