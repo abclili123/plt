@@ -8,10 +8,10 @@ Ensure the any version of python3 is installed on your machine<br>
 Ensure the build script has the proper permissions: chmod +x build.sh<br>
 Run the script as ./build.sh <input_filename> <output_filename> <br>
 
-### Language summary:<br>
+<br>
 
-#### Lexical Grammar:
-##### Keywords:<br>
+### Lexical Grammar:
+#### Keywords:<br>
 KEYWORD = define | tempo | play | generate | rest<br>
 - define: This keyword is used to define a part of the program, being a loop or segment<br>
 - tempo: This keyword is used to set the pace of the music<br>
@@ -19,7 +19,7 @@ KEYWORD = define | tempo | play | generate | rest<br>
 - generate: This keyword is used to declare an AI generated chord. It is followed by a DESCRIPTION_LITERAL used to generate the chord<br>
 <br>
 
-##### Types:<br>
+#### Types:<br>
 - TYPE_PART = loop | segment<br>
 loop and segment define parts of the program. loops are sequences of notes chords, and/ or segments that repeat. segments are the same but do not repeat.<br>
 - TYPE_GROUP = group<br>
@@ -32,7 +32,7 @@ chord and note are types of sounds that instruments can play<br>
 beat describes the number as a duration relative to the tempo.<br>
 <br>
 
-##### Delimiters:<br>
+#### Delimiters:<br>
 - OPENBRACK = {<br>
 Starts a definition<br>
 - CLOSEBRACK = }<br>
@@ -42,7 +42,7 @@ Delimits parts of code<br>
 - COMMA = ,<br>
 Separates groups of notes and chords or loops and segments<br>
 
-##### Literals:<br>
+#### Literals:<br>
 INSTRUMENT_LITERAL = piano | guitar | horn | bass | snare | hihat<br>
 - NOTE_LITERAL = ```[A-Ga-g][# + b]?[1-7]?```<br>
 A note is a single, predefined frequency played by an instrument. In music, notes are letters A-G, they can be sharp, flat, or neither, and they can optionally have an octave.<br>
@@ -55,7 +55,7 @@ A one word description to describe the desired chord to generate.<br>
 - IDENTIFIER = ```[a-zA-Z][a-zA-Z0-9_]*```<br>
 Used to identify loops, segments, and groups<br>
 
-##### Example program descirptions:<br>
+#### Example program descirptions:<br>
 Example 1: how to make a drum kit<br>
 This is a basic test of the lexer to make sure that we are reaching each delimiter and processing the tokens within those sections.
 <br>
