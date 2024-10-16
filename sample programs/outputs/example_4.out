@@ -100,7 +100,8 @@
 < CLOSEBRACK >
 < NEWLINE >
 < NEWLINE >
-< TYPE_GROUP >
+< KEYWORD , define >
+< TYPE_PART , {loop} >
 < IDENTIFIER , mary_had_a_little_lamb >
 < OPENBRACK >
 < NEWLINE >

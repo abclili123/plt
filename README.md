@@ -20,7 +20,7 @@ generate: This keyword is used to declare an AI generated chord. It is followed 
 <br>
 Types:<br>
 TYPE_PART = loop | segment<br>
-loop and segment define parts of the program. loops are sequences of notes and chords that repeat. segments are the same but do not repeat.<br>
+loop and segment define parts of the program. loops are sequences of notes chords, and/ or segments that repeat. segments are the same but do not repeat.<br>
 TYPE_GROUP = group<br>
 group is used to chain parts (loops and segments) together so that they can be played easier<br>
 TYPE_INSTRUMENT = instrument<br>
@@ -52,3 +52,10 @@ DESCRIPTION_LITERAL = [a-zA-Z]+<br>
 A one word description to describe the desired chord to generate.<br>
 IDENTIFIER = [a-zA-Z][a-zA-Z0-9_]*<br>
 Used to identify loops, segments, and groups<br>
+
+Example program descirptions:<br>
+example 1: how to make a drum kit<br>
+example 2: how to have background music and a solo. The background loops and the solo plays once
+example 3: background piano, a guiatr part, and a drum kit all looping at the same time
+example 4: how to play mary had a little lamb. Each segment of the melody plays, then there is one beat of rest. the loop consists of segemnts with a loop, so when the loop is played the segments play in order and repeat. 
+example 5: Groups loops togehter
