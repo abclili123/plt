@@ -58,4 +58,4 @@ example 1: how to make a drum kit<br>
 example 2: how to have background music and a solo. The background loops and the solo plays once
 example 3: background piano, a guiatr part, and a drum kit all looping at the same time
 example 4: how to play mary had a little lamb. Each segment of the melody plays, then there is one beat of rest. the loop consists of segemnts with a loop, so when the loop is played the segments play in order and repeat. 
-example 5: Groups loops togehter
+example 5: Groups loops together to play easier. Similar to example 1. Plays the group and the loop at the same time so the output sound would be twinkle twinkle little start playing with drums in the bakcground. This file has errors to show how error tokens are handled. 
