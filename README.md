@@ -59,6 +59,7 @@ Used to identify loops, segments, and groups<br>
 Example 1: how to make a drum kit<br>
 This is a basic test of the lexer to make sure that we are reaching each delimiter and processing the tokens within those sections.
 <br>
+
 Example 2: how to have background music and a solo. The background loops and the solo plays once <br>
 This is a test of multiple note declarations within a single expression, and how the lexer handles a handful of tokens within a delimiter segment.
 <br>
