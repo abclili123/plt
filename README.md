@@ -76,4 +76,5 @@ Example 5: Groups loops together to play easier. Similar to example 1. Plays the
 The purpose of this test is to make sure that the lexer can gracefully handle errors when encountered and continue to parse the rest of the program. The lexer should be able to constrain the error token within its respective delimiters, and the parsing of code outside those delimiters should not be affected. <br>
 
 #### DFA of lexer:<br>
+clicking image removes blur<br>
 <img width="1383" alt="plt dfa" src="https://github.com/user-attachments/assets/43675d8d-74ab-4165-aab3-7938ca1029d4">
