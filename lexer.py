@@ -36,11 +36,27 @@ TYPES = {
 #####################
 
 def handle_error(buffer):
+    # further specifics could be added here to automatically resolve conflicts,
+    # however this is just to demonstrate how the lexer will process an unrecognized buffer
     print(f"Error: Unrecognized token '{buffer}'")
 
+def buf_is_digit(buffer):
+    for char in buffer:
+        if not (ord('0') <= ord(char) <= ord('9')):
+            return False
+    return True
+
+def buf_is_alnum(buffer):
+    for char in buffer:
+        if not (buf_is_digit(char) or
+                (ord('A') <= ord(char) <= ord('Z')) or
+                (ord('a') <= ord(char) <= ord('z'))):
+            return False
+        return True
 
 #### MATCHING FUNCTIONS ####
 def match_delimiter(char):
+    # self explanatory, checked in order of priority for parsing
     if char == '{':
         return "OPENBRACK"
     elif char == '}':
@@ -55,16 +71,19 @@ def match_delimiter(char):
     return False
 
 def match_keyword(buffer):
+    # if buffer is a keyword in language grammar, return token
     if buffer in KEYWORDS:
         return (f"< KEYWORD , {buffer} >", buffer)
     return False
 
 def match_type(buffer):
+    # if buffer is a type in language grammar, return token
     if buffer in TYPES.keys():
         return (TYPES[buffer], buffer)
     return False
 
 def match_instrument(buffer):
+    # if buffer is a instrument in language grammar, return token
     if buffer in INSTRUMENTS:
         return f"< INSTRUMENT_LITERAL , {buffer} >", buffer
     return False
@@ -80,7 +99,7 @@ def match_note_literal(buffer):
     elif len(buffer) == 2: # a4, a#
         note = buffer[0] in "ABCDEFGabcdefg"
         accidental = buffer[1] in ['#', 'b']
-        octave = buffer[1].isdigit()
+        octave = buf_is_digit(buffer[1])
         if note and (accidental or octave):
             return f"< NOTE_LITERAL , {buffer} >"
     
@@ -88,7 +107,7 @@ def match_note_literal(buffer):
     elif len(buffer) == 3:
         note = buffer[0] in "ABCDEFGabcdefg"
         accidental = buffer[1] in ['#', 'b']
-        octave = buffer[2].isdigit()
+        octave = buf_is_digit(buffer[2])
         if note and accidental and octave:
             return f"< NOTE_LITERAL , {buffer} >"
         
@@ -105,7 +124,7 @@ def match_chord_literal(buffer):
     elif len(buffer) == 2: # a4, a#
         note = buffer[0] in "ABCDEFGabcdefg"
         accidental = buffer[1] in ['#', 'b']
-        octave = buffer[1].isdigit()
+        octave = buf_is_digit(buffer[1])
         minor = buffer[1] == "m"
         if note and (accidental or octave or minor):
             return f"< CHORD_LITERAL , {buffer} >"
@@ -117,24 +136,24 @@ def match_chord_literal(buffer):
         # accidental in 1, octave in 2
         # accidental in 1, minor in 2
         accidental = buffer[1] in ['#', 'b']
-        octave = buffer[2].isdigit()
+        octave = buf_is_digit(buffer[2])
         minor = buffer[2] == "m"
         if note and accidental and (octave or minor):
             return f"< CHORD_LITERAL , {buffer} >"
         
         # octave in 1, minor in 2
-        octave = buffer[1].isdigit()
+        octave = buf_is_digit(buffer[1])
         if note and octave and minor:
             return f"< CHORD_LITERAL , {buffer} >"
         
     return False
 
 def match_time_literal(buffer):
-    if buffer.isdigit():
+    if buf_is_digit(buffer):
         return f"< TIME_LITERAL , {buffer} >"
     elif '.' in buffer:
         parts = buffer.split('.')
-        if len(parts) == 2 and all(part.isdigit() or part == "" for part in parts):
+        if len(parts) == 2 and all(buf_is_digit(part) or part == "" for part in parts):
             return f"< TIME_LITERAL , {buffer} >"
     return False
 
@@ -144,7 +163,7 @@ def match_description_literal(buffer):
     return False
 
 def match_identifier(buffer):
-    if buffer and buffer[0].isalpha() and all(c.isalnum() or c == '_' for c in buffer):
+    if buffer and buffer[0].isalpha() and all(buf_is_alnum(c) or c == '_' for c in buffer):
         return f"< IDENTIFIER , {buffer} >"
     return False
 
