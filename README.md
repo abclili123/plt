@@ -74,3 +74,6 @@ This test serves as a demonstration for a practical use case, as well as testing
 
 Example 5: Groups loops together to play easier. Similar to example 1. Plays the group and the loop at the same time so the output sound would be twinkle twinkle little start playing with drums in the bakcground. This file has errors to show how error tokens are handled. <br>
 The purpose of this test is to make sure that the lexer can gracefully handle errors when encountered and continue to parse the rest of the program. The lexer should be able to constrain the error token within its respective delimiters, and the parsing of code outside those delimiters should not be affected. <br>
+
+#### DFA of lexer:<br>
+<img width="1383" alt="plt dfa" src="https://github.com/user-attachments/assets/43675d8d-74ab-4165-aab3-7938ca1029d4">
