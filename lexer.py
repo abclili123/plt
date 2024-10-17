@@ -268,8 +268,7 @@ def lexer(input_program, output_file):
                             token = (match_note_literal(buffer) or
                                     match_chord_literal(buffer) or
                                     match_time_literal(buffer) or
-                                    match_identifier(buffer) or
-                                    match_description_literal(buffer))
+                                    match_identifier(buffer))
 
                         if token:
                             output.append(token)
@@ -298,8 +297,7 @@ def lexer(input_program, output_file):
                          match_note_literal(buffer) or
                          match_chord_literal(buffer) or
                          match_time_literal(buffer) or
-                         match_identifier(buffer) or
-                         match_description_literal(buffer)
+                         match_identifier(buffer)
                          )
                 if type(token) == tuple:
                     token = token[0]
