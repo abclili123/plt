@@ -47,7 +47,7 @@ Run the script as ```./build.sh <input_filename> <output_filename>``` <br>
 < play_statement > → < KEYWORD , play > < IDENTIFIER > OR < KEYWORD , play > < define_type > < IDENTIFIER > OPENBRACK > <part_body> < CLOSEBRACK >
 <br>
 
-< group > → < IDENTIFIER > OPENBRACK (< IDENTIFIER > (< COMMA > < IDENTIFIER >)* < NEWLINE > )* < CLOSEBRACK >
+< group > → < TYPE_GROUP > < IDENTIFIER > OPENBRACK (< IDENTIFIER > (< COMMA > < IDENTIFIER >)* < NEWLINE > )* < CLOSEBRACK >
 <br>
 
 ### Lexical Grammar:
