@@ -10,6 +10,46 @@ Run the script as ```./build.sh <input_filename> <output_filename>``` <br>
 
 <br>
 
+### Context Free Grammar:
+< program > → < tempo > < NEWLINE > < statement >*
+<br>
+
+< statement > → < define_part > OR < group > OR < play_statement >
+<br>
+ 
+< define_part > → < KEYWORD , define > < define_type > < IDENTIFIER > < OPENBRACK > < part_body > < CLOSEBRACK >
+<br>
+
+< define_type > → < TYPE_PART , {loop} > OR < TYPE_PART , {segment} >
+<br>
+
+< part_body > → < instrument_declaration > < sounds >*
+<br>
+
+< instrument_declaration > → < TYPE_INSTRUMENT > < INSTRUMENT_LITERAL > < NEWLINE >
+<br>
+
+< sounds > → < note_or_chord > (< COMMA > <note_or_chord>)* < duration >
+		<br>OR < KEYWORD , rest > < duration >
+		<br>OR < KEYWORD , generate >  < DESCRIPTION_LITERAL > (< TYPE_SOUND, {note} > OR < TYPE_SOUND, {chord} >) < duration >
+		<br>OR < IDENTIFIER > < NEWLINE >
+<br>
+
+< note_chord > → < TYPE_SOUND, {note} > < NOTE_LITERAL > 
+               <br>OR < TYPE_SOUND, {chord} > < CHORD_LITERAL >
+<br>
+
+< duration > → < TIME_LITERAL > < TYPE_TIME > < NEWLINE >
+<br>
+< tempo > → < KEYWORD , tempo > < TIME_LITERAL >
+<br>
+
+< play_statement > → < KEYWORD , play > < IDENTIFIER > OR < KEYWORD , play > < define_type > < IDENTIFIER > OPENBRACK > <part_body> < CLOSEBRACK >
+<br>
+
+< group > → < IDENTIFIER > OPENBRACK (< IDENTIFIER > (< COMMA > < IDENTIFIER >)* < NEWLINE > )* < CLOSEBRACK >
+<br>
+
 ### Lexical Grammar:
 #### Keywords:<br>
 KEYWORD = define | tempo | play | generate | rest<br>
