@@ -32,6 +32,7 @@ grammar = {
     "tempo": [["< KEYWORD , tempo >", "< TIME_LITERAL >"]],
     "play_statement": [
         ["< KEYWORD , play >", "< IDENTIFIER >"],
+        ["< KEYWORD , play >", "< IDENTIFIER >", "< COMMA >", "< IDENTIFIER >"],
         ["< KEYWORD , play >", "define_type", "< IDENTIFIER >", "< OPENBRACK >", "part_body", "< CLOSEBRACK >"]
     ],
     "group": [
@@ -101,7 +102,7 @@ follow_sets["define_type"] = {"< IDENTIFIER >",}
 follow_sets["part_body"] = {"< CLOSEBRACK >"}
 follow_sets["instrument_declaration"] = first_sets["sounds"]
 follow_sets["sounds"] = {"< CLOSEBRACK >"}
-follow_sets["note_or_chord"] = {"< COMMA >", "< TIME_LITERAL >"}
+follow_sets["note_or_chord"] = {"< COMMA >", "< TIME_LITERAL >", ""}
 follow_sets["note_chord"] = {"< COMMA >", "< TIME_LITERAL >"}
 follow_sets["optional_note_chord"] = {"< TIME_LITERAL >"}
 follow_sets["duration"] = first_sets["sounds"].union({"< CLOSEBRACK >"})
@@ -181,14 +182,15 @@ def create_parse_table(grammar, first_sets, follow_sets):
     
     return parse_table
 
-def print_ast_tree(node, spacing=0):
-    result = " " * spacing + f"{node.type}\n"
+def print_ast_tree(node):
+    spacing = 2
+    result = " " + f"{node.type}\n"
 
     for t, child in node.children:
         if t == "terminal":
-            result += " " * (spacing + 2) + f"token: {child}\n"
+            result += " " * (spacing + spacing) + f"token: {child}\n"
         else:
-            result += print_ast_tree(child, spacing + 2)
+            result += print_ast_tree(child)
     
     return result
 
@@ -209,6 +211,8 @@ def parser(input_program, output_file):
     ast = parse_tree.parse()
     
     if ast is None:
+        print("Failed at", parse_tree.cursor)
+        print("Total Tokens:", len(tokens))
         print("Failed to generate AST. Errors:")
         for error in parse_tree.errors:
             print(error)
