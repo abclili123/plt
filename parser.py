@@ -1,26 +1,20 @@
 import sys
 
 grammar = {
-    "program": [["tempo", "< NEWLINE >", "statement", "EOF"]],
-    "statement": [["define_part", "statement"], ["group", "statement"], ["play_statement"], []],
+    "program": [["tempo", "statement"]],
+    "statement": [["define_part"], ["group"], ["play_statement"], []],
     "define_part": [["< KEYWORD , define >", "define_type", "< IDENTIFIER >", "< OPENBRACK >", "part_body", "< CLOSEBRACK >", "statement"]],
-    "define_type": [["< TYPE_PART , {loop} >"], ["< TYPE_PART , {segment} >"], ["group_body", "EOF"]],
+    "define_type": [["< TYPE_PART , {loop} >"], ["< TYPE_PART , {segment} >"]],
     "part_body": [["instrument_declaration", "sounds"]],
-    "instrument_declaration": [["< TYPE_INSTRUMENT >", "< INSTRUMENT_LITERAL >", "< NEWLINE >"]],
-   "note_sequence": [
-        ["note_or_chord"],
-        ["< NOTE_LITERAL >"], 
-        ["< TYPE_SOUND, {note} >", "< NOTE_LITERAL >"],
-        ["< TYPE_SOUND, {chord} >", "< CHORD_LITERAL >"]
-    ],
+    "instrument_declaration": [["< TYPE_INSTRUMENT >", "< INSTRUMENT_LITERAL >"]],
     "sounds": [
-        ["note_sequence", "duration", "sounds"],
+        ["note_or_chord", "optional_note_chord", "duration", "sounds"],
         ["< KEYWORD , rest >", "duration", "sounds"],
-        ["< KEYWORD , generate >", "< DESCRIPTION_LITERAL >", "< TYPE_SOUND, {note} >", "duration", "sounds"],
-        ["< IDENTIFIER >", "< NEWLINE >", "sounds"],
+        ["< KEYWORD , generate >", "generate_sounds", "optional_generate_sounds", "duration", "sounds"],
+        ["< IDENTIFIER >", "sounds"],
         [],
     ],
-    "note_chord": [
+    "note_or_chord": [
         ["< TYPE_SOUND, {note} >", "< NOTE_LITERAL >"],
         ["< TYPE_SOUND, {chord} >", "< CHORD_LITERAL >"]
     ],
@@ -28,23 +22,22 @@ grammar = {
         ["< COMMA >", "note_or_chord", "optional_note_chord"],
         []
     ],
-    "duration": [["< TIME_LITERAL >", "< TYPE_TIME >", "< NEWLINE >"]],
-    "tempo": [["< KEYWORD , tempo >", "< TIME_LITERAL >"]],
-    "play_statement": [
-        ["< KEYWORD , play >", "< IDENTIFIER >"],
-        ["< KEYWORD , play >", "< IDENTIFIER >", "< COMMA >", "< IDENTIFIER >"],
-        ["< KEYWORD , play >", "define_type", "< IDENTIFIER >", "< OPENBRACK >", "part_body", "< CLOSEBRACK >"]
+    "generate_sounds":[
+        ["< DESCRIPTION_LITERAL >", "< TYPE_SOUND, {note} >"],
+        ["< DESCRIPTION_LITERAL >", "< TYPE_SOUND, {chord} >"],
     ],
-    "group": [
-        ["< TYPE_GROUP >", "< IDENTIFIER >", "< OPENBRACK >", "group_body", "< CLOSEBRACK >", "statement"]
-    ],
-    "group_body": [
-        ["group_item", "< NEWLINE >", "group_body"],
+    "optional_generate_sounds":[
+        ["< COMMA >", "generate_sounds", "optional_generate_sounds"],
         []
     ],
-    "group_item": [
-        ["< IDENTIFIER >"],
-        ["< INSTRUMENT_LITERAL >"]
+    "duration": [["< TIME_LITERAL >", "< TYPE_TIME >"]],
+    "tempo": [["< KEYWORD , tempo >", "< TIME_LITERAL >"]],
+    "play_statement": [
+        ["< KEYWORD , play >", "< IDENTIFIER >", "statement"],
+        ["< KEYWORD , play >", "define_type", "< IDENTIFIER >", "< OPENBRACK >", "part_body", "< CLOSEBRACK >", "statement"]
+    ],
+    "group": [
+        ["< TYPE_GROUP >", "< IDENTIFIER >", "< OPENBRACK >", "< IDENTIFIER >", "optional_identifiers", "< CLOSEBRACK >", "statement"]
     ],
     "optional_identifiers": [
         ["< COMMA >", "< IDENTIFIER >", "optional_identifiers"],
@@ -53,82 +46,48 @@ grammar = {
 }
 
 # first set
-# need to double check
 first_sets = {
-    "program": {"< KEYWORD , tempo >", "EOF"},
-    "statement": {"< KEYWORD , define >", "< KEYWORD , play >", "< TYPE_GROUP >", "", "EOF"},
-    "define_part": {"< KEYWORD , define >"},
-    "define_type": {"< TYPE_PART , {loop} >", "< TYPE_PART , {segment} >", "< IDENTIFIER >"},
-    "part_body": {"< TYPE_INSTRUMENT >"},
-    "instrument_declaration": {"< TYPE_INSTRUMENT >"},
-    "sounds": {"< TYPE_SOUND, {note} >", "< TYPE_SOUND, {chord} >", "< NOTE_LITERAL >", "< KEYWORD , rest >", "< KEYWORD , generate >", "< IDENTIFIER >"},
-    "note_chord": {"< TYPE_SOUND, {note} >", "< TYPE_SOUND, {chord} >"},
-    "optional_note_chord": {"< COMMA >", ""},
-    "duration": {"< TIME_LITERAL >"},
-    "tempo": {"< KEYWORD , tempo >"},
-    "play_statement": {"< KEYWORD , play >"},
-    "group": {"< TYPE_GROUP >"},
-    "optional_identifiers": {"< COMMA >", ""},
-    "note_sequence": {"< NOTE_LITERAL >", "< TYPE_SOUND, {note} >", "< TYPE_SOUND, {chord} >"},
-    "group_body": {"< IDENTIFIER >", "< INSTRUMENT_LITERAL >", ""},
-    "group_item": {"< IDENTIFIER >", "< INSTRUMENT_LITERAL >"}
+    "program": ["< KEYWORD , tempo >", "EOF"],
+    "statement": ["< KEYWORD , define >", "< KEYWORD , play >", "< TYPE_GROUP >", "", "EOF"],
+    "define_part": ["< KEYWORD , define >"],
+    "define_type": ["< TYPE_PART , {loop} >", "< TYPE_PART , {segment} >"],
+    "part_body": ["< TYPE_INSTRUMENT >"],
+    "instrument_declaration": ["< TYPE_INSTRUMENT >"],
+    "sounds": ["< TYPE_SOUND, {note} >", "< TYPE_SOUND, {chord} >", "< KEYWORD , rest >", "< KEYWORD , generate >", "< IDENTIFIER >", ""],
+    "note_or_chord": ["< TYPE_SOUND, {note} >", "< TYPE_SOUND, {chord} >"],
+    "optional_note_chord": ["< COMMA >", ""],
+    "generate_sounds": ["< DESCRIPTION_LITERAL >"],
+    "optional_generate_sounds": ["< COMMA >", ""],
+    "duration": ["< TIME_LITERAL >"],
+    "tempo": ["< KEYWORD , tempo >"],
+    "play_statement": ["< KEYWORD , play >"],
+    "group": ["< TYPE_GROUP >"],
+    "optional_identifiers": ["< COMMA >", ""],
 }
 
 # follow sets
-# need to fill out
 # initialize follow sets with empty sets
 follow_sets = {
-    "program": set(),
-    "statement": set(),
-    "define_part": set(),
-    "define_type": set(),
-    "part_body": set(), 
-    "instrument_declaration": set(),
-    "sounds": set(),
-    "note_or_chord": set(), 
-    "note_chord": set(), 
-    "optional_note_chord": set(),  
-    "duration": set(),  
-    "tempo": set(),  
-    "play_statement": set(), 
-    "group": set(), 
-    "optional_identifiers": set() 
+    "program": ["EOF"],
+    "statement": ["EOF"], # follow program
+    "define_part": ["EOF"], # follow statement
+    "define_type": ["< IDENTIFIER >"],
+    "part_body": ["< CLOSEBRACK >"], 
+    "instrument_declaration": first_sets["sounds"],
+    "sounds": ["< CLOSEBRACK >"], # follow part body
+    "note_or_chord": ["< COMMA >", "< TIME_LITERAL >"], # first optional note or chord and first of duration
+    "optional_note_chord": ["< COMMA >", "< TIME_LITERAL >"], # first optional_note_chord and first of duration
+    "generate_sounds": ["< COMMA >", "< TIME_LITERAL >"], # first optional generate and first of duration
+    "optional_generate_sounds": ["< COMMA >", "< TIME_LITERAL >"], # first optional_generate_sounds and first of duration 
+    "duration": ["< TYPE_SOUND, {note} >", "< TYPE_SOUND, {chord} >", "< KEYWORD , rest >", "< KEYWORD , generate >", "< IDENTIFIER >", "< CLOSEBRACK >"],  # and follow of sounds
+    "tempo": ["< KEYWORD , define >", "< KEYWORD , play >", "< TYPE_GROUP >", "EOF"], # first and follow of statement
+    "play_statement": ["EOF"], # follow statement, 
+    "group": ["EOF"], # follow statement 
+    "optional_identifiers": ["< COMMA >", "optional_identifiers"] # first optional_identifiers and first of duration 
 }
-
-# then fill the follow sets
-follow_sets["program"] = {"EOF"}
-follow_sets["statement"] = {"EOF", "< CLOSEBRACK >"}
-follow_sets["define_type"] = {"< IDENTIFIER >",}
-follow_sets["part_body"] = {"< CLOSEBRACK >"}
-follow_sets["instrument_declaration"] = first_sets["sounds"]
-follow_sets["sounds"] = {"< CLOSEBRACK >"}
-follow_sets["note_or_chord"] = {"< COMMA >", "< TIME_LITERAL >", ""}
-follow_sets["note_chord"] = {"< COMMA >", "< TIME_LITERAL >"}
-follow_sets["optional_note_chord"] = {"< TIME_LITERAL >"}
-follow_sets["duration"] = first_sets["sounds"].union({"< CLOSEBRACK >"})
-follow_sets["tempo"] = {"< NEWLINE >"}
-follow_sets["optional_identifiers"] = {"< NEWLINE >"}
-
-follow_sets["define_part"] = first_sets["statement"].union(follow_sets["statement"])
-follow_sets["play_statement"] = first_sets["statement"].union(follow_sets["statement"])
-follow_sets["group"] = first_sets["statement"].union(follow_sets["statement"])
-
-follow_sets["statement"] = follow_sets["statement"].union(first_sets["statement"])
-follow_sets["sounds"] = follow_sets["sounds"].union(first_sets["sounds"])
-follow_sets["optional_note_chord"] = follow_sets["optional_note_chord"].union(first_sets["optional_note_chord"])
-follow_sets["optional_identifiers"] = follow_sets["optional_identifiers"].union(first_sets["optional_identifiers"])
 
 # error recovery
 error_types = ["Syntax Error", "Semantic Error", "Lexical Error", "Type Error"]
-
-grammar["note_or_chord"] = grammar["note_chord"]
-first_sets["note_or_chord"] = first_sets["note_chord"]
-follow_sets["note_or_chord"] = follow_sets["note_chord"]
-first_sets["note_sequence"] = {"< NOTE_LITERAL >", "< TYPE_SOUND, {note} >", "< TYPE_SOUND, {chord} >"}
-follow_sets["note_sequence"] = {"< TIME_LITERAL >"}
-follow_sets["optional_note_chord"] = {"< TIME_LITERAL >"}
-follow_sets["group_body"] = {"< CLOSEBRACK >"}
-follow_sets["group_item"] = {"< NEWLINE >"}
 
 # construct parse table
 def create_parse_table(grammar, first_sets, follow_sets):
