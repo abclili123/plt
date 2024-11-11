@@ -1,5 +1,5 @@
 import sys
-from parse2 import Parser
+from parser import Parser
 
 ######## KEYWORDS ########
 KEYWORDS = [
@@ -329,9 +329,7 @@ def lexer(input_program, output_file):
                     output.append(("ERROR", f"Unrecognized token '{buffer}' >"))
 
         write_output_to_file(output, output_file)
-        parser = Parser(output)
-        parser.parse_program()
-        parser.print_ast_tree()
+        return output
 
     except FileNotFoundError:
         print(f"Error: The program '{input_program}' was not found.")
@@ -339,10 +337,16 @@ def lexer(input_program, output_file):
         print(f"Error reading file: {e}")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python lexer.py <input_filename> <output_filename>")
+    if len(sys.argv) != 4:
+        print("Usage: python lexer.py <input_filename> <lexer_output_filename> <parser_output_filename>")
     else:
         input_file = sys.argv[1]
-        output_file = sys.argv[2]
+        lexer_output_file = sys.argv[2]
+        parser_output_file = sys.argv[3]
+        print(f"Lexing {input_file}")
+        output = lexer(input_file, lexer_output_file)
+
         print(f"Parsing {input_file}")
-        lexer(input_file, output_file)
+        parser = Parser(output, parser_output_file)
+        parser.parse_program()
+        parser.print_ast_tree()

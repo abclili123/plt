@@ -1,335 +1,345 @@
-import sys
-
-grammar = {
-    "program": [["tempo", "statement"]],
-    "statement": [["define_part"], ["group"], ["play_statement"], []], # [] denotes epsilon
-    "define_part": [["< KEYWORD , define >", "define_type", "< IDENTIFIER >", "< OPENBRACK >", "part_body", "< CLOSEBRACK >", "statement"]],
-    "define_type": [["< TYPE_PART , {loop} >"], ["< TYPE_PART , {segment} >"]],
-    "part_body": [["instrument_declaration", "sounds"]],
-    "instrument_declaration": [["< TYPE_INSTRUMENT >", "< INSTRUMENT_LITERAL >"]],
-    "sounds": [
-        ["note_or_chord", "optional_note_chord", "duration", "sounds"],
-        ["< KEYWORD , rest >", "duration", "sounds"],
-        ["< KEYWORD , generate >", "generate_sounds", "optional_generate_sounds", "duration", "sounds"],
-        ["< IDENTIFIER >", "sounds"],
-        [],
-    ],
-    "note_or_chord": [
-        ["< TYPE_SOUND, {note} >", "< NOTE_LITERAL >"],
-        ["< TYPE_SOUND, {chord} >", "< CHORD_LITERAL >"]
-    ],
-    "optional_note_chord": [
-        ["< COMMA >", "note_or_chord", "optional_note_chord"],
-        []
-    ],
-    "generate_sounds":[
-        ["< DESCRIPTION_LITERAL >", "< TYPE_SOUND, {note} >"],
-        ["< DESCRIPTION_LITERAL >", "< TYPE_SOUND, {chord} >"],
-    ],
-    "optional_generate_sounds":[
-        ["< COMMA >", "generate_sounds", "optional_generate_sounds"],
-        []
-    ],
-    "duration": [["< TIME_LITERAL >", "< TYPE_TIME >"]],
-    "tempo": [["< KEYWORD , tempo >", "< TIME_LITERAL >"]],
-    "play_statement": [
-        ["< KEYWORD , play >", "< IDENTIFIER >", "statement"],
-        ["< KEYWORD , play >", "define_type", "< IDENTIFIER >", "< OPENBRACK >", "part_body", "< CLOSEBRACK >", "statement"]
-    ],
-    "group": [
-        ["< TYPE_GROUP >", "< IDENTIFIER >", "< OPENBRACK >", "< IDENTIFIER >", "optional_identifiers", "< CLOSEBRACK >", "statement"]
-    ],
-    "optional_identifiers": [
-        ["< COMMA >", "< IDENTIFIER >", "optional_identifiers"],
-        []
-    ]
-}
-
-# first set
-first_sets = {
-    "program": ["< KEYWORD , tempo >", "EOF"],
-    "statement": ["< KEYWORD , define >", "< KEYWORD , play >", "< TYPE_GROUP >", "", "EOF"], # "" denotes epsilon
-    "define_part": ["< KEYWORD , define >"],
-    "define_type": ["< TYPE_PART , {loop} >", "< TYPE_PART , {segment} >"],
-    "part_body": ["< TYPE_INSTRUMENT >"],
-    "instrument_declaration": ["< TYPE_INSTRUMENT >"],
-    "sounds": ["< TYPE_SOUND, {note} >", "< TYPE_SOUND, {chord} >", "< KEYWORD , rest >", "< KEYWORD , generate >", "< IDENTIFIER >", ""],
-    "note_or_chord": ["< TYPE_SOUND, {note} >", "< TYPE_SOUND, {chord} >"],
-    "optional_note_chord": ["< COMMA >", ""],
-    "generate_sounds": ["< DESCRIPTION_LITERAL >"],
-    "optional_generate_sounds": ["< COMMA >", ""],
-    "duration": ["< TIME_LITERAL >"],
-    "tempo": ["< KEYWORD , tempo >"],
-    "play_statement": ["< KEYWORD , play >"],
-    "group": ["< TYPE_GROUP >"],
-    "optional_identifiers": ["< COMMA >", ""],
-}
-
-# follow sets
-follow_sets = {
-    "program": ["EOF"],
-    "statement": ["EOF"], # follow program
-    "define_part": ["EOF"], # follow statement
-    "define_type": ["< IDENTIFIER >"],
-    "part_body": ["< CLOSEBRACK >"], 
-    "instrument_declaration": first_sets["sounds"],
-    "sounds": ["< CLOSEBRACK >"], # follow part body
-    "note_or_chord": ["< COMMA >", "< TIME_LITERAL >"], # first optional note or chord and first of duration
-    "optional_note_chord": ["< COMMA >", "< TIME_LITERAL >"], # first optional_note_chord and first of duration
-    "generate_sounds": ["< COMMA >", "< TIME_LITERAL >"], # first optional generate and first of duration
-    "optional_generate_sounds": ["< COMMA >", "< TIME_LITERAL >"], # first optional_generate_sounds and first of duration 
-    "duration": ["< TYPE_SOUND, {note} >", "< TYPE_SOUND, {chord} >", "< KEYWORD , rest >", "< KEYWORD , generate >", "< IDENTIFIER >", "< CLOSEBRACK >"],  # and follow of sounds
-    "tempo": ["< KEYWORD , define >", "< KEYWORD , play >", "< TYPE_GROUP >", "EOF"], # first and follow of statement
-    "play_statement": ["EOF"], # follow statement, 
-    "group": ["EOF"], # follow statement 
-    "optional_identifiers": ["< COMMA >", "optional_identifiers"] # first optional_identifiers and first of duration 
-}
-
-# error recovery
-error_types = ["Syntax Error", "Semantic Error", "Lexical Error", "Type Error"]
-
-# construct parse table
-def create_parse_table(grammar, first_sets, follow_sets):
-    parse_table = {}
-    
-    for non_terminal in grammar:
-        parse_table[non_terminal] = {}
-        
-        for production in grammar[non_terminal]:
-            if not production: 
-                for terminal in follow_sets[non_terminal]:
-                    term_type = f"< {terminal.strip('<>').split(',')[0].strip()} >" if terminal.startswith("<") else terminal
-                    if term_type not in parse_table[non_terminal]:
-                        parse_table[non_terminal][term_type] = production
-                continue
-                
-            first_symbol = production[0]
-            
-            if first_symbol.startswith("<"):
-                if "KEYWORD , play" in first_symbol:
-                    # special case for play keyword
-                    if non_terminal == "statement":
-                        parse_table[non_terminal]["< KEYWORD , play >"] = ["play_statement"]
-                    else:
-                        parse_table[non_terminal]["< KEYWORD , play >"] = production
-                else:
-                    term_type = f"< {first_symbol.strip('<>').split(',')[0].strip()} >"
-                    if term_type not in parse_table[non_terminal]:
-                        parse_table[non_terminal][term_type] = production
-            else:
-                if first_symbol in first_sets:
-                    print(f"    Adding entries from first set of {first_symbol}: {first_sets[first_symbol]}")
-                    # add entries for each terminal in the first set of the non-terminal
-                    for terminal in first_sets[first_symbol]:
-                        if terminal == "":
-                            continue
-                        if terminal == "EOF":
-                            term_type = terminal
-                        else:
-                            term_type = f"< {terminal.strip('<>').split(',')[0].strip()} >"
-                        if term_type not in parse_table[non_terminal]:
-                            parse_table[non_terminal][term_type] = production
-                else:
-                    print(f"Warning: No first set entry for {first_symbol}")
-    
-    # Debug output
-    print("\nParse table entries for sounds:")
-    if "sounds" in parse_table:
-        for key, value in parse_table["sounds"].items():
-            print(f"  {key}: {value}")
-    
-    return parse_table
-
-def print_ast_tree(node):
-    spacing = 2
-    result = " " + f"{node.type}\n"
-
-    for t, child in node.children:
-        if t == "terminal":
-            result += " " * (spacing + spacing) + f"token: {child}\n"
-        else:
-            result += print_ast_tree(child)
-    
-    return result
-
-# i think we can remove this code to a different file
-# and paste the table here so that we're not regenerating the table every time
-
-
-def parser(input_program, output_file):
-    tokens = []
-    with open(input_program, 'r') as token_stream:
-        for line in token_stream:
-            if line.strip(): 
-                tokens.append(line.strip())
-    
-    print("Tokens to parse:", tokens)
-    
-    parse_tree = ParseTree(tokens)
-    ast = parse_tree.parse()
-    
-    if ast is None:
-        print("Failed at", parse_tree.cursor)
-        print("Total Tokens:", len(tokens))
-        print("Failed to generate AST. Errors:")
-        for error in parse_tree.errors:
-            print(error)
-        return
-    
-    with open(output_file, 'w') as output:
-        output.write(print_ast_tree(ast))
-    
-    if parse_tree.errors:
-        print("\nParser errors:")
-        for error in parse_tree.errors:
-            print(error)      
-
-class TreeNode:
-    def __init__(self, type):
+class Node:
+    def __init__(self, type, value=None):
         self.type = type
+        self.value = value
         self.children = []
+    def add_child(self, node):
+        if node:
+            self.children.append(node)
+    def __str__(self):
+        return f"{self.type} ({self.value})"
 
-    def append(self, child_tuple):
-        self.children.append(child_tuple)
 
-parse_table = create_parse_table(grammar, first_sets, follow_sets)
 
-class ParseTree:
-    def __init__(self, tokens):
+class Parser:
+    def __init__(self, tokens, output_file):
         self.tokens = tokens
-        self.cursor = 0
-        self.grammar = grammar
-        self.first_sets = first_sets
-        self.follow_sets = follow_sets
-        self.parse_table = parse_table
-        self.errors = []
+        self.index = 0
+        self.current_token = self.tokens[self.index] if self.tokens else None
 
-    # returns the next token but does not increment the cursor
-    def peek(self):
-        if self.cursor < len(self.tokens):
-            return self.tokens[self.cursor].strip()
-        return "EOF"
+        # AST set up
+        self.root_node = None
+        self.current_node = None
+        self.stack = []
+        self.output_file = output_file
+        self.error = None
 
-    # returns the next token and increments the cursor
-    def consume(self):
-        token = self.peek()
-        self.cursor += 1
-        return token
+    def advance(self):
+        # move to the next token in the input
+        self.index += 1
+        if self.index < len(self.tokens):
+            self.current_token = self.tokens[self.index]
+        else:
+            self.current_token = None
+
+    def match(self, token_type, token_value=None):
+        # check if the current token matches the expected type (and value, if provided)
+        if self.current_token is None:
+            return False
+        
+        if self.current_token[0] != token_type:
+            return False
+        if token_value and self.current_token[1] != token_value:
+            return False
+        return True
     
-    def get_token_type(self, token):
-        if token == "EOF":
-            return token
-        if not token.startswith("<"):
-            return token
-        return token.strip('<>').split(',')[0].strip()
+    def print_ast_tree(self, node=None, level=0, prefix=""):
+        output_string = ""
 
-    def match(self, expected):
-        token = self.peek()
+        if self.error:
+            output_string += self.error
+        else:
+            if node is None:
+                node = self.root_node
+                print(f"{node}")
+                output_string += f"{node}\n"
+            else:
+                print(f"{prefix}|-- {node}")
+                output_string += f"{prefix}|-- {node}\n"
 
-        expected_type = f"< {self.get_token_type(expected)} >" if expected.startswith("<") else expected
-        token_type = f"< {self.get_token_type(token)} >" if token.startswith("<") else token
+            for child in node.children:
+                new_prefix = prefix + "|   "
+                output_string += self.print_ast_tree(child, level + 1, new_prefix)
 
-        print(f"DEBUG: Matching - Expected type: {expected_type}, Token type: {token_type}")
+        # write to output after recursion
+        if level == 0:
+            with open(self.output_file, "w") as out:
+                out.write(output_string)
 
-        if expected_type == token_type:
-            consumed = self.consume()
-            print(f"Matched token: {consumed}")
-            return consumed
-        # elif (expected_type == "< NEWLINE >" and token == "EOF"):
-        #     print("Matched EOF")
-        #     return "EOF"
-
-        self.errors.append(f"{error_types[0]} - expected {expected} but got {token} at position {self.cursor}")
-        return None
-
-    def should_skip_newlines(self, non_terminal):
-        # list of non-terminals where we should skip newlines
-        skip_newlines_for = {
-            "statement", 
-            "sounds", 
-            "part_body", 
-            "instrument_declaration",
-            "group_body"
-        }
-        return non_terminal in skip_newlines_for
-
-    def skip_newlines(self):
-        while self.peek().startswith("< NEWLINE >"):
-            self.consume()
-            print("Skipping newline")
-
-    def parse_non_terminal(self, non_terminal):
-        if self.should_skip_newlines(non_terminal):
-            self.skip_newlines()
-
-        curr = self.peek()
-        curr_type = f"< {self.get_token_type(curr)} >" if curr.startswith("<") else curr
-        print(f"DEBUG: Parsing {non_terminal} with token {curr}")
-        print(f"DEBUG: Token type: {curr_type}")
-        print(f"DEBUG: Available productions for {non_terminal}: {self.parse_table.get(non_terminal, {})}")
-
-        if non_terminal not in self.parse_table or curr_type not in self.parse_table[non_terminal]:
-            available = self.parse_table.get(non_terminal, {}).keys()
-            self.errors.append(f"{error_types[0]} - no production for {non_terminal} with token {curr}")
-            self.errors.append(f"Available productions were for tokens: {available}")
-            return None
-
-        production = self.parse_table[non_terminal][curr_type]
-        node = TreeNode(non_terminal)
-
-        for symbol in production:
-            if (len(self.tokens) <= self.cursor):
-                print("EOF")
-                break;
-            if symbol == "< NEWLINE >":
-                token = self.match(symbol)
-                if token:
-                    node.children.append(("terminal", token))
+        return output_string
+        
+    def consume(self, token_type, token_value=None):
+        # consume the current token if it matches, and advance
+        if self.match(token_type, token_value):
+            token = self.current_token
+            # if token_type == tempo, define, play, group
+            # it becomes the current node
+            # expect tempo to be root node
+            if token_type == "KEYWORD":
+                if token_value == "tempo":
+                    self.root_node = Node("Program")
+                    tempo_node = Node("Tempo")
+                    self.root_node.add_child(tempo_node)
+                    self.current_node = tempo_node
+                    self.stack.append(tempo_node)
+                elif token_value == "define":
+                    define_node = Node("Define")
+                    self.root_node.add_child(define_node)
+                    self.current_node = define_node
+                    self.stack.append(define_node)
+                elif token_value == "play":
+                    play_node = Node("Play")
+                    self.root_node.add_child(play_node)
+                    self.current_node = play_node
+                    self.stack.append(play_node)
+                elif token_value == "generate":
+                    generate_node = Node("Generate")
+                    self.current_node.add_child(generate_node)
+                    self.current_node = generate_node
+                    self.stack.append(generate_node)
+                elif token_value == "rest":
+                    rest_node = Node("Rest")
+                    self.current_node.add_child(rest_node)
+                    self.current_node = rest_node
+                    self.stack.append(rest_node)
+            elif token_type == "TYPE_GROUP":
+                group_node = Node("Group")
+                self.root_node.add_child(group_node)
+                self.current_node = group_node
+                self.stack.append(group_node)
+            elif token_type == "IDENTIFIER":
+                identifier_node = Node("Identifier", token[1])
+                self.current_node.add_child(identifier_node)
+            elif token_type == "TIME_LITERAL":
+                if isinstance(self.current_node, Node) and self.current_node.type == "Tempo":
+                    self.current_node.value = token[1]
                 else:
-                    return None
-                self.skip_newlines()
-            elif symbol.startswith("<"):
-                token = self.match(symbol)
-                if token:
-                    node.children.append(("terminal", token))
-                else:
-                    return None
-            elif symbol in self.grammar:
-                child = self.parse_non_terminal(symbol)
-                if child:
-                    node.children.append(("non-terminal", child))
-                else:
-                    return None
-            elif symbol == "EOF":
-                if self.peek() != "EOF":
-                    self.errors.append(f"{error_types[0]} - expected EOF but got {self.peek()}")
-                    return None
+                    self.duration_value = token[1]
+            elif token_type == "TYPE_TIME":
+                duration_node = Node("Duration", f"{self.duration_value} {token[1]}")
+                self.current_node.add_child(duration_node)
+                if self.current_node.type == "Sound" or self.current_node.type == "Generate" or self.current_node.type == "Rest":
+                    self.stack.pop()
+                    self.current_node = self.stack[-1] if self.stack else None
+            elif token_type == "TYPE_PART":
+                type_node = Node("Type", token[1])
+                self.current_node.add_child(type_node)
+            elif token_type == "TYPE_INSTRUMENT":
+                instrument_node = Node("Instrument")
+                self.current_node.add_child(instrument_node)
+                self.current_node = instrument_node
+                self.stack.append(instrument_node)
+            elif token_type == "INSTRUMENT_LITERAL":
+                self.current_node.value = token[1]
+                self.stack.pop()
+                self.current_node = self.stack[-1] if self.stack else None
+            elif token_type == "TYPE_SOUND":
+                sound_node = Node("Sound", token[1])
+                self.current_node.add_child(sound_node)
+                self.current_node = sound_node
+                self.stack.append(sound_node)
+            elif token_type == "NOTE_LITERAL" or token_type == "CHORD_LITERAL":
+                value_node = Node("Value", token[1])
+                self.current_node.add_child(value_node)
+            elif token_type == "DESCRIPTION_LITERAL":
+                desc_node = Node("Description", token[1])
+                self.current_node.add_child(desc_node)
+            elif token_type == "OPENBRACK":
+                body_node = Node("Body")
+                self.current_node.add_child(body_node)
+                self.current_node = body_node
+                self.stack.append(body_node)
+            elif token_type == "CLOSEBRACK":
+                self.stack.pop()
+                self.current_node = self.stack[-1] if self.stack else None
+            
+        
+            # else the token and it's value becomes the child of the current node    
 
-        return node
+            # if the current node changes
+            # print the current branch to the AST
+            # reset the children 
+            self.advance()
+        else:
+            self.error = f"Expected {token_type} ({token_value}), but found {self.current_token}"
+            self.print_ast_tree()
+            raise SyntaxError(f"Expected {token_type} ({token_value}), but found {self.current_token}")
+
+    def parse_program(self):
+        # parse the program non-terminal
+        if self.match("KEYWORD", "tempo"):
+            self.parse_tempo()
+            self.parse_statement()
+        else:
+            self.error = f"Expected 'tempo', but found {self.current_token}"
+            self.print_ast_tree()
+            raise SyntaxError(f"Expected 'tempo', but found {self.current_token}")
+
+    def parse_statement(self):
+        # arse the statement non-terminal
+        if self.match("KEYWORD", "define"):
+            self.parse_define_part()
+        elif self.match("TYPE_GROUP"):
+            self.parse_group()
+        elif self.match("KEYWORD", "play"):
+            self.parse_play_statement()
+        elif self.current_token == None:
+            print("successful parse")
+            return  # epsilon (empty production)
+        else:
+            self.error = f"Unexpected token in statement: {self.current_token}"
+            self.print_ast_tree()
+            raise SyntaxError(f"Unexpected token in statement: {self.current_token}")
+
+    def parse_define_part(self):
+        # parse the define_part non-terminal
+        self.consume("KEYWORD", "define")
+        self.parse_define_type()
+        self.consume("IDENTIFIER")
+        self.consume("OPENBRACK")
+        self.parse_part_body()
+        self.consume("CLOSEBRACK")
+        self.parse_statement()
+
+    def parse_define_type(self):
+        # parse the define_type non-terminal
+        if self.match("TYPE_PART", "loop"):
+            self.consume("TYPE_PART", "loop")
+        elif self.match("TYPE_PART", "segment"):
+            self.consume("TYPE_PART", "segment")
+        else:
+            self.error = f"Expected 'loop' or 'segment', but found {self.current_token}"
+            self.print_ast_tree()
+            raise SyntaxError(f"Expected 'loop' or 'segment', but found {self.current_token}")
+
+    def parse_part_body(self):
+        # parse the part_body non-terminal
+        self.parse_instrument_declaration()
+        self.parse_sounds()
+
+    def parse_instrument_declaration(self):
+        # parse the instrument_declaration non-terminal
+        self.consume("TYPE_INSTRUMENT")
+        self.consume("INSTRUMENT_LITERAL")
+
+    def parse_sounds(self):
+        # parse the sounds non-terminal
+        if self.match("TYPE_SOUND", "note"):
+            self.parse_note_or_chord()
+            self.parse_optional_note_chord()
+            self.parse_duration()
+            self.parse_sounds()
+        elif self.match("KEYWORD", "rest"):
+            self.consume("KEYWORD", "rest")
+            self.parse_duration()
+            self.parse_sounds()
+        elif self.match("KEYWORD", "generate"):
+            self.consume("KEYWORD", "generate")
+            self.parse_generate_sounds()
+            self.parse_optional_generate_sounds()
+            self.parse_duration()
+            self.parse_sounds()
+        elif self.match("IDENTIFIER"):
+            self.consume("IDENTIFIER")
+            self.parse_sounds()
+        else:
+            return  # epsilon (empty production)
+
+    def parse_note_or_chord(self):
+        # parse the note_chord non-terminal
+        if self.match("TYPE_SOUND", "note"):
+            self.consume("TYPE_SOUND", "note")
+            self.consume("NOTE_LITERAL")
+        elif self.match("TYPE_SOUND", "chord"):
+            self.consume("TYPE_SOUND", "chord")
+            self.consume("CHORD_LITERAL")
+        else:
+            self.error = f"Expected 'note' or 'chord', but found {self.current_token}"
+            self.print_ast_tree()
+            raise SyntaxError(f"Expected 'note' or 'chord', but found {self.current_token}")
+
+    def parse_optional_note_chord(self):
+        # parse the the (< COMMA > <note_or_chord>)* for adding a list of notes and chords
+        if self.match("COMMA"):
+            self.consume("COMMA")
+            self.parse_note_or_chord()
+            self.parse_optional_note_chord()
+        else:
+            return  # epsilon (empty production)
+
+    def parse_generate_sounds(self):
+        # parse the generating from sounds
+        self.consume("DESCRIPTION_LITERAL")
+        if self.match("TYPE_SOUND", "note"):
+            self.consume("TYPE_SOUND", "note")
+        elif self.match("TYPE_SOUND", "chord"):
+            self.consume("TYPE_SOUND", "chord")
+        else:
+            self.error = f"Expected 'note' or 'chord', but found {self.current_token}"
+            self.print_ast_tree()
+            raise SyntaxError(f"Expected 'note' or 'chord', but found {self.current_token}")
+
+    def parse_optional_generate_sounds(self):
+        # parse the generating more than one sound
+        if self.match("COMMA"):
+            self.consume("COMMA")
+            self.parse_generate_sounds()
+            self.parse_optional_generate_sounds()
+        else:
+            return  # epsilon (empty production)
+
+    def parse_duration(self):
+        # parse the duration non-terminal
+        self.consume("TIME_LITERAL")
+        self.consume("TYPE_TIME")
+
+    def parse_tempo(self):
+        # parse the tempo non-terminal
+        self.consume("KEYWORD", "tempo")
+        self.consume("TIME_LITERAL")
+
+    def parse_play_statement(self):
+        # parse the play_statement non-terminal
+        self.consume("KEYWORD", "play")
+        if self.match("IDENTIFIER"):
+            self.consume("IDENTIFIER")
+            self.parse_optional_identifiers()
+            self.parse_statement()
+        elif self.match("TYPE_PART"):
+            self.parse_define_type()
+            self.consume("IDENTIFIER")
+            self.consume("OPENBRACK")
+            self.parse_part_body()
+            self.consume("CLOSEBRACK")
+            self.parse_statement()
+        else:
+            self.error = f"Unexpected token in play_statement: {self.current_token}"
+            self.print_ast_tree()
+            raise SyntaxError(f"Unexpected token in play_statement: {self.current_token}")
+
+    def parse_group(self):
+        # parse the group non-terminal
+        self.consume("TYPE_GROUP")
+        self.consume("IDENTIFIER")
+        self.consume("OPENBRACK")
+        self.parse_group_body()
+        self.consume("CLOSEBRACK")
+        self.parse_statement()
     
-    def parse(self):
-        return self.parse_non_terminal("program")
+    def parse_group_body(self):
+        # parse the group's body
+        if self.match("IDENTIFIER"):
+            self.consume("IDENTIFIER")
+            self.parse_optional_identifiers()
+            self.parse_group_body()
+        else:
+            return  # epsilon (empty production)
 
-
-def main():
-    if len(sys.argv) != 3:
-        print("Usage: python parser.py <input_filename> <output_filename>")
-    else:
-        input_file = sys.argv[1]
-        if (input_file[-4:] != ".out"):
-            print("Input file must be a .out file")
-            print("Make sure lexer has been run first to generate the .out file")
-            return
-        output_file = sys.argv[2]
-
-        import pprint
-        parse_table = create_parse_table(grammar, first_sets, follow_sets)
-        pprint.pprint(parse_table)
-
-        """
-        print(f"Parsing {input_file}")
-        parser(input_file, output_file)"""
-
-
-if __name__ == "__main__":
-    main()
+    def parse_optional_identifiers(self):
+        # parse the (< IDENTIFIER > (< COMMA > < IDENTIFIER >)* for grouping multiple parts
+        if self.match("COMMA"):
+            self.consume("COMMA")
+            self.consume("IDENTIFIER")
+            self.parse_optional_identifiers()
+        else:
+            return  # epsilon (empty production)
