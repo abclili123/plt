@@ -37,6 +37,7 @@ class Parser:
 
             # if the current node changes
             # print the current branch to the AST
+            # reset the children 
 
 
             self.advance()
