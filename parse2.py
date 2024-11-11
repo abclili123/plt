@@ -4,6 +4,10 @@ class Parser:
         self.index = 0
         self.current_token = self.tokens[self.index] if self.tokens else None
 
+        # AST set up
+        self.current_node = None
+        self.current_children = []
+
     def advance(self):
         # move to the next token in the input
         self.index += 1
@@ -26,6 +30,15 @@ class Parser:
     def consume(self, token_type, token_value=None):
         # consume the current token if it matches, and advance
         if self.match(token_type, token_value):
+            # if token_type == tempo, define, play, group
+            # it becomes the current node
+
+            # else the token and it's value becomes the child
+
+            # if the current node changes
+            # print the current branch to the AST
+
+
             self.advance()
         else:
             raise SyntaxError(f"Expected {token_type} ({token_value}), but found {self.current_token}")
