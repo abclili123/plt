@@ -25,11 +25,10 @@ define segment fleece{
     note g 2 beats
 }
 
-define loop mary_had_a_little_lamb {
+group mary_had_a_little_lamb {
     mary_had_a
     little_lamb
     fleece
-    rest 1 beat
 }
 
 play mary_had_a_little_lamb

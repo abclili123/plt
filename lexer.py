@@ -1,4 +1,5 @@
 import sys
+from parse2 import Parser
 
 ######## KEYWORDS ########
 KEYWORDS = [
@@ -328,6 +329,8 @@ def lexer(input_program, output_file):
                     output.append(("ERROR", f"Unrecognized token '{buffer}' >"))
 
         write_output_to_file(output, output_file)
+        parser = Parser(output)
+        parser.parse_program()
 
     except FileNotFoundError:
         print(f"Error: The program '{input_program}' was not found.")

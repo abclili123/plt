@@ -1,14 +1,14 @@
 tempo 84
 
-define loop. twinkle_little_star {
+define loop twinkle_little_star {
     instrument piano
     note c 1 beat
     note c 1 beat
     note g 1 beat
     note g 1 beat
     note a 1 beat
-    note h 1 beat
-    notes g 2 beats
+    note g 1 beat
+    note g 2 beats
 
     note f 1 beat
     note f 1 beat
@@ -24,7 +24,7 @@ define loop bass_drum {
     note c 1 beat
 }
 
-define loop 3snare {
+define loop snare_drum {
     instrument snare
     note d 1 beat
 }
@@ -38,7 +38,7 @@ group drum_pattern {
     bass_drum
     hat
     bass_drum
-    3snare
+    snare_drum
 }
 
 play twinkle_little_star, drum_pattern
