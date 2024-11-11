@@ -23,6 +23,7 @@ class Parser:
         self.stack = []
         self.output_file = output_file
         self.error = None
+        self.errors = []
 
     def advance(self):
         # move to the next token in the input
@@ -162,8 +163,9 @@ class Parser:
             self.advance()
         else:
             self.error = f"Expected {token_type} ({token_value}), but found {self.current_token}"
-            self.print_ast_tree()
-            raise SyntaxError(f"Expected {token_type} ({token_value}), but found {self.current_token}")
+            self.errors.append(self.error)
+            #self.print_ast_tree()
+            #raise SyntaxError(f"Expected {token_type} ({token_value}), but found {self.current_token}")
 
     def parse_program(self):
         # parse the program non-terminal
@@ -172,8 +174,9 @@ class Parser:
             self.parse_statement()
         else:
             self.error = f"Expected 'tempo', but found {self.current_token}"
-            self.print_ast_tree()
-            raise SyntaxError(f"Expected 'tempo', but found {self.current_token}")
+            self.errors.append(self.error)
+            #self.print_ast_tree()
+            #raise SyntaxError(f"Expected 'tempo', but found {self.current_token}")
 
     def parse_statement(self):
         # arse the statement non-terminal
@@ -188,8 +191,9 @@ class Parser:
             return  # epsilon (empty production)
         else:
             self.error = f"Unexpected token in statement: {self.current_token}"
-            self.print_ast_tree()
-            raise SyntaxError(f"Unexpected token in statement: {self.current_token}")
+            self.errors.append(self.error)
+            #self.print_ast_tree()
+            #raise SyntaxError(f"Unexpected token in statement: {self.current_token}")
 
     def parse_define_part(self):
         # parse the define_part non-terminal
@@ -209,8 +213,9 @@ class Parser:
             self.consume("TYPE_PART", "segment")
         else:
             self.error = f"Expected 'loop' or 'segment', but found {self.current_token}"
-            self.print_ast_tree()
-            raise SyntaxError(f"Expected 'loop' or 'segment', but found {self.current_token}")
+            self.errors.append(self.error)
+            #self.print_ast_tree()
+            #raise SyntaxError(f"Expected 'loop' or 'segment', but found {self.current_token}")
 
     def parse_part_body(self):
         # parse the part_body non-terminal
@@ -255,8 +260,9 @@ class Parser:
             self.consume("CHORD_LITERAL")
         else:
             self.error = f"Expected 'note' or 'chord', but found {self.current_token}"
-            self.print_ast_tree()
-            raise SyntaxError(f"Expected 'note' or 'chord', but found {self.current_token}")
+            self.errors.append(self.error)
+            #self.print_ast_tree()
+            #raise SyntaxError(f"Expected 'note' or 'chord', but found {self.current_token}")
 
     def parse_optional_note_chord(self):
         # parse the the (< COMMA > <note_or_chord>)* for adding a list of notes and chords
@@ -276,8 +282,9 @@ class Parser:
             self.consume("TYPE_SOUND", "chord")
         else:
             self.error = f"Expected 'note' or 'chord', but found {self.current_token}"
-            self.print_ast_tree()
-            raise SyntaxError(f"Expected 'note' or 'chord', but found {self.current_token}")
+            self.errors.append(self.error)
+            #self.print_ast_tree()
+            #raise SyntaxError(f"Expected 'note' or 'chord', but found {self.current_token}")
 
     def parse_optional_generate_sounds(self):
         # parse the generating more than one sound
@@ -314,8 +321,9 @@ class Parser:
             self.parse_statement()
         else:
             self.error = f"Unexpected token in play_statement: {self.current_token}"
-            self.print_ast_tree()
-            raise SyntaxError(f"Unexpected token in play_statement: {self.current_token}")
+            self.errors.append(self.error)
+            #self.print_ast_tree()
+            #raise SyntaxError(f"Unexpected token in play_statement: {self.current_token}")
 
     def parse_group(self):
         # parse the group non-terminal

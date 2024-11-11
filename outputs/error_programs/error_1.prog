@@ -16,7 +16,7 @@ define loop hat {
 	note b 1 beat
 }
 
-group loop drum_kit{
+group drum_kit loop {
     bass_guitar, hat
     hat
     bass_drums
