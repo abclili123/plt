@@ -6,7 +6,7 @@
 ### Installation and Execution Instructions<br>
 Ensure the any version of python3 is installed on your machine<br>
 Ensure the build script has the proper permissions: ```chmod +x build.sh```<br>
-Run the script as ```./build.sh <input_filename> <output_filename>``` <br>
+Run the script as ```./build.sh <input_filename> <lexer_output> <parser_output>``` <br>
 
 <br>
 
