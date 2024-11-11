@@ -1,0 +1,25 @@
+tempo 120
+
+define loop bass_guitar {
+    instrument bass 
+    note a 1 beat
+}
+
+define loop bass_drums {
+    instrument bass 
+    note a, note b 1 beat
+    note a 1 beat
+}
+
+define loop hat {
+	instrument hihat
+	note b 1 beat
+}
+
+group drum_kit{
+    bass_guitar, hat
+    hat
+    bass_drums
+}
+
+play drum_kit
