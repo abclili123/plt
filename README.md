@@ -31,7 +31,7 @@ Run the script as ```./build.sh <input_filename> <output_filename>``` <br>
 
 < sounds > → < note_or_chord > (< COMMA > <note_or_chord>)* < duration >
 		<br>OR < KEYWORD , rest > < duration >
-		<br>OR < KEYWORD , generate >  < DESCRIPTION_LITERAL > (< TYPE_SOUND, {note} > OR < TYPE_SOUND, {chord} >) < duration >
+		<br>OR < KEYWORD , generate >  < DESCRIPTION_LITERAL > (< TYPE_SOUND, {note} > OR < TYPE_SOUND, {chord} >) ( < COMMA > < DESCRIPTION_LITERAL > (< TYPE_SOUND, {note} > OR < TYPE_SOUND, {chord} >))* < duration >
 		<br>OR < IDENTIFIER > < NEWLINE >
 <br>
 

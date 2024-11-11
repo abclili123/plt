@@ -5,7 +5,7 @@ class Parser:
         self.current_token = self.tokens[self.index] if self.tokens else None
 
     def advance(self):
-        """Move to the next token in the input."""
+        # move to the next token in the input
         self.index += 1
         if self.index < len(self.tokens):
             self.current_token = self.tokens[self.index]
@@ -13,7 +13,7 @@ class Parser:
             self.current_token = None
 
     def match(self, token_type, token_value=None):
-        """Check if the current token matches the expected type (and value, if provided)."""
+        # check if the current token matches the expected type (and value, if provided)
         if self.current_token is None:
             return False
         
@@ -24,14 +24,14 @@ class Parser:
         return True
 
     def consume(self, token_type, token_value=None):
-        """Consume the current token if it matches, and advance."""
+        # consume the current token if it matches, and advance
         if self.match(token_type, token_value):
             self.advance()
         else:
             raise SyntaxError(f"Expected {token_type} ({token_value}), but found {self.current_token}")
 
     def parse_program(self):
-        """Parse the 'program' non-terminal."""
+        # parse the program non-terminal
         if self.match("KEYWORD", "tempo"):
             self.parse_tempo()
             self.parse_statement()
@@ -39,7 +39,7 @@ class Parser:
             raise SyntaxError(f"Expected 'tempo', but found {self.current_token}")
 
     def parse_statement(self):
-        """Parse the 'statement' non-terminal."""
+        # arse the statement non-terminal
         if self.match("KEYWORD", "define"):
             self.parse_define_part()
         elif self.match("TYPE_GROUP"):
@@ -53,7 +53,7 @@ class Parser:
             raise SyntaxError(f"Unexpected token in statement: {self.current_token}")
 
     def parse_define_part(self):
-        """Parse the 'define_part' non-terminal."""
+        # parse the define_part non-terminal
         self.consume("KEYWORD", "define")
         self.parse_define_type()
         self.consume("IDENTIFIER")
@@ -63,7 +63,7 @@ class Parser:
         self.parse_statement()
 
     def parse_define_type(self):
-        """Parse the 'define_type' non-terminal."""
+        # parse the define_type non-terminal
         if self.match("TYPE_PART", "loop"):
             self.consume("TYPE_PART", "loop")
         elif self.match("TYPE_PART", "segment"):
@@ -72,17 +72,17 @@ class Parser:
             raise SyntaxError(f"Expected 'loop' or 'segment', but found {self.current_token}")
 
     def parse_part_body(self):
-        """Parse the 'part_body' non-terminal."""
+        # parse the part_body non-terminal
         self.parse_instrument_declaration()
         self.parse_sounds()
 
     def parse_instrument_declaration(self):
-        """Parse the 'instrument_declaration' non-terminal."""
+        # parse the instrument_declaration non-terminal
         self.consume("TYPE_INSTRUMENT")
         self.consume("INSTRUMENT_LITERAL")
 
     def parse_sounds(self):
-        """Parse the 'sounds' non-terminal."""
+        # parse the sounds non-terminal
         if self.match("TYPE_SOUND", "note"):
             self.parse_note_or_chord()
             self.parse_optional_note_chord()
@@ -105,7 +105,7 @@ class Parser:
             return  # epsilon (empty production)
 
     def parse_note_or_chord(self):
-        """Parse the 'note_or_chord' non-terminal."""
+        # parse the note_chord non-terminal
         if self.match("TYPE_SOUND", "note"):
             self.consume("TYPE_SOUND", "note")
             self.consume("NOTE_LITERAL")
@@ -116,7 +116,7 @@ class Parser:
             raise SyntaxError(f"Expected 'note' or 'chord', but found {self.current_token}")
 
     def parse_optional_note_chord(self):
-        """Parse the 'optional_note_chord' non-terminal."""
+        # parse the the (< COMMA > <note_or_chord>)* for adding a list of notes and chords
         if self.match("COMMA"):
             self.consume("COMMA")
             self.parse_note_or_chord()
@@ -125,7 +125,7 @@ class Parser:
             return  # epsilon (empty production)
 
     def parse_generate_sounds(self):
-        """Parse the 'generate_sounds' non-terminal."""
+        # parse the generating from sounds
         self.consume("DESCRIPTION_LITERAL")
         if self.match("TYPE_SOUND", "note"):
             self.consume("TYPE_SOUND", "note")
@@ -135,7 +135,7 @@ class Parser:
             raise SyntaxError(f"Expected 'note' or 'chord', but found {self.current_token}")
 
     def parse_optional_generate_sounds(self):
-        """Parse the 'optional_generate_sounds' non-terminal."""
+        # parse the generating more than one sound
         if self.match("COMMA"):
             self.consume("COMMA")
             self.parse_generate_sounds()
@@ -144,17 +144,17 @@ class Parser:
             return  # epsilon (empty production)
 
     def parse_duration(self):
-        """Parse the 'duration' non-terminal."""
+        # parse the duration non-terminal
         self.consume("TIME_LITERAL")
         self.consume("TYPE_TIME")
 
     def parse_tempo(self):
-        """Parse the 'tempo' non-terminal."""
+        # parse the tempo non-terminal
         self.consume("KEYWORD", "tempo")
         self.consume("TIME_LITERAL")
 
     def parse_play_statement(self):
-        """Parse the 'play_statement' non-terminal."""
+        # parse the play_statement non-terminal
         self.consume("KEYWORD", "play")
         if self.match("IDENTIFIER"):
             self.consume("IDENTIFIER")
@@ -171,7 +171,7 @@ class Parser:
             raise SyntaxError(f"Unexpected token in play_statement: {self.current_token}")
 
     def parse_group(self):
-        """Parse the 'group' non-terminal."""
+        # parse the group non-terminal
         self.consume("TYPE_GROUP")
         self.consume("IDENTIFIER")
         self.consume("OPENBRACK")
@@ -180,6 +180,7 @@ class Parser:
         self.parse_statement()
     
     def parse_group_body(self):
+        # parse the group's body
         if self.match("IDENTIFIER"):
             self.consume("IDENTIFIER")
             self.parse_optional_identifiers()
@@ -188,21 +189,10 @@ class Parser:
             return  # epsilon (empty production)
 
     def parse_optional_identifiers(self):
-        """Parse the 'optional_identifiers' non-terminal."""
+        # parse the (< IDENTIFIER > (< COMMA > < IDENTIFIER >)* for grouping multiple parts
         if self.match("COMMA"):
             self.consume("COMMA")
             self.consume("IDENTIFIER")
             self.parse_optional_identifiers()
         else:
             return  # epsilon (empty production)
-
-
-
-
-
-
-
-
-
-
-
