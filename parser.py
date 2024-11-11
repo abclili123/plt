@@ -2,7 +2,7 @@ import sys
 
 grammar = {
     "program": [["tempo", "statement"]],
-    "statement": [["define_part"], ["group"], ["play_statement"], []],
+    "statement": [["define_part"], ["group"], ["play_statement"], []], # [] denotes epsilon
     "define_part": [["< KEYWORD , define >", "define_type", "< IDENTIFIER >", "< OPENBRACK >", "part_body", "< CLOSEBRACK >", "statement"]],
     "define_type": [["< TYPE_PART , {loop} >"], ["< TYPE_PART , {segment} >"]],
     "part_body": [["instrument_declaration", "sounds"]],
@@ -48,7 +48,7 @@ grammar = {
 # first set
 first_sets = {
     "program": ["< KEYWORD , tempo >", "EOF"],
-    "statement": ["< KEYWORD , define >", "< KEYWORD , play >", "< TYPE_GROUP >", "", "EOF"],
+    "statement": ["< KEYWORD , define >", "< KEYWORD , play >", "< TYPE_GROUP >", "", "EOF"], # "" denotes epsilon
     "define_part": ["< KEYWORD , define >"],
     "define_type": ["< TYPE_PART , {loop} >", "< TYPE_PART , {segment} >"],
     "part_body": ["< TYPE_INSTRUMENT >"],
@@ -66,7 +66,6 @@ first_sets = {
 }
 
 # follow sets
-# initialize follow sets with empty sets
 follow_sets = {
     "program": ["EOF"],
     "statement": ["EOF"], # follow program
@@ -322,8 +321,14 @@ def main():
             print("Make sure lexer has been run first to generate the .out file")
             return
         output_file = sys.argv[2]
+
+        import pprint
+        parse_table = create_parse_table(grammar, first_sets, follow_sets)
+        pprint.pprint(parse_table)
+
+        """
         print(f"Parsing {input_file}")
-        parser(input_file, output_file)
+        parser(input_file, output_file)"""
 
 
 if __name__ == "__main__":

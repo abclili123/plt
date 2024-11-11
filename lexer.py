@@ -24,14 +24,14 @@ INSTRUMENTS = [
 
 #### TYPES ####
 TYPES = {
-        "loop": "< TYPE_PART , {loop} >",
-        "segment": "< TYPE_PART , {segment} >",
-        "group": "< TYPE_GROUP >",
-        "instrument": "< TYPE_INSTRUMENT >",
-        "chord": "< TYPE_SOUND, {chord} >",
-        "note": "< TYPE_SOUND, {note} >",
-        "beat": "< TYPE_TIME, {beat} >",
-        "beats": "< TYPE_TIME, {beats} >",
+        "loop": ("TYPE_PART", "loop"),
+        "segment": ("TYPE_PART", "segment"),
+        "group": ("TYPE_GROUP", ),
+        "instrument": ("TYPE_INSTRUMENT",),
+        "chord": ("TYPE_SOUND", "chord"),
+        "note": ("TYPE_SOUND", "note"),
+        "beat": ("TYPE_TIME", "beat"),
+        "beats": ("TYPE_TIME", "beats"),
     }
 #####################
 
@@ -73,7 +73,7 @@ def match_delimiter(char):
 def match_keyword(buffer):
     # if buffer is a keyword in language grammar, return token
     if buffer in KEYWORDS:
-        return (f"< KEYWORD , {buffer} >", buffer)
+        return (("KEYWORD" , buffer), buffer)
     return False
 
 def match_type(buffer):
@@ -85,7 +85,7 @@ def match_type(buffer):
 def match_instrument(buffer):
     # if buffer is a instrument in language grammar, return token
     if buffer in INSTRUMENTS:
-        return f"< INSTRUMENT_LITERAL , {buffer} >", buffer
+        return ("INSTRUMENT_LITERAL" , buffer), buffer
     return False
 
 def match_note_literal(buffer):
@@ -93,7 +93,7 @@ def match_note_literal(buffer):
     if len(buffer) == 1:
         note = buffer[0]
         if note in "ABCDEFGabcdefg":
-            return f"< NOTE_LITERAL , {buffer} >"
+            return ("NOTE_LITERAL" , buffer)
     
     # if it is two char it can be a note followed be an accidental or an octave
     elif len(buffer) == 2: # a4, a#
@@ -101,7 +101,7 @@ def match_note_literal(buffer):
         accidental = buffer[1] in ['#', 'b']
         octave = buf_is_digit(buffer[1])
         if note and (accidental or octave):
-            return f"< NOTE_LITERAL , {buffer} >"
+            return ("NOTE_LITERAL" , buffer)
     
     # if it is 3 char it can be a note followed be an accidental and an octave
     elif len(buffer) == 3:
@@ -109,7 +109,7 @@ def match_note_literal(buffer):
         accidental = buffer[1] in ['#', 'b']
         octave = buf_is_digit(buffer[2])
         if note and accidental and octave:
-            return f"< NOTE_LITERAL , {buffer} >"
+            return ("NOTE_LITERAL" , buffer)
         
     return False
 
@@ -118,7 +118,7 @@ def match_chord_literal(buffer):
     if len(buffer) == 1:
         note = buffer[0]
         if note in "ABCDEFGabcdefg":
-            return f"< CHORD_LITERAL , {buffer} >"
+            return ("CHORD_LITERAL" , buffer)
     
     # if it is two char it can be a note followed be an accidental or an octave or a minor
     elif len(buffer) == 2: # a4, a#
@@ -127,7 +127,7 @@ def match_chord_literal(buffer):
         octave = buf_is_digit(buffer[1])
         minor = buffer[1] == "m"
         if note and (accidental or octave or minor):
-            return f"< CHORD_LITERAL , {buffer} >"
+            return ("CHORD_LITERAL" , buffer)
     
     # if it is 3 char it can be a note followed be 2 of the following accidental, octave, minor
     elif len(buffer) == 3:
@@ -139,32 +139,32 @@ def match_chord_literal(buffer):
         octave = buf_is_digit(buffer[2])
         minor = buffer[2] == "m"
         if note and accidental and (octave or minor):
-            return f"< CHORD_LITERAL , {buffer} >"
+            return ("CHORD_LITERAL" , buffer)
         
         # octave in 1, minor in 2
         octave = buf_is_digit(buffer[1])
         if note and octave and minor:
-            return f"< CHORD_LITERAL , {buffer} >"
+            return ("CHORD_LITERAL" , buffer)
         
     return False
 
 def match_time_literal(buffer):
     if buf_is_digit(buffer):
-        return f"< TIME_LITERAL , {buffer} >"
+        return ("TIME_LITERAL" , buffer)
     elif '.' in buffer:
         parts = buffer.split('.')
         if len(parts) == 2 and all(buf_is_digit(part) or part == "" for part in parts):
-            return f"< TIME_LITERAL , {buffer} >"
+            return ("TIME_LITERAL" , buffer)
     return False
 
 def match_description_literal(buffer):
     if buffer.isalpha() and len(buffer) > 0:
-        return f"< DESCRIPTION_LITERAL , {buffer} >"
+        return ("DESCRIPTION_LITERAL" , buffer)
     return False
 
 def match_identifier(buffer):
     if buffer and buffer[0].isalpha() and all(buf_is_alnum(c) or c == '_' for c in buffer):
-        return f"< IDENTIFIER , {buffer} >"
+        return (("IDENTIFIER" , buffer))
     return False
 
 #############################
@@ -172,7 +172,7 @@ def match_identifier(buffer):
 def write_output_to_file(output, filename):
     with open(filename, "w") as output_file:
         for token in output:
-            output_file.write(token + "\n")
+            output_file.write(str(token) + "\n")
     print(f"Output written to {filename}")
 
 def lexer(input_program, output_file):
@@ -295,13 +295,13 @@ def lexer(input_program, output_file):
                         # this way buffer can be handled when doing error processing
                         else:
                             handle_error(buffer)
-                            output.append(f"< ERROR , Unrecognized token '{buffer}' >")
+                            output.append(("ERROR", f"Unrecognized token '{buffer}' >"))
                         
                         buffer = ""
 
                     # whitespace could be potentially ignored, but for now will be recognized as token
-                    if delim != "WHITESPACE":
-                        output.append(f"< {delim} >")
+                    if delim != "WHITESPACE" and delim != "NEWLINE":
+                        output.append((delim, ))
 
                     continue
 
@@ -318,14 +318,14 @@ def lexer(input_program, output_file):
                          match_time_literal(buffer) or
                          match_identifier(buffer)
                          )
-                if type(token) == tuple:
+                if type(token[0]) == tuple:
                     token = token[0]
 
                 if token:
                     output.append(token)
                 else:
                     handle_error(buffer)
-                    output.append(f"< ERROR , Unrecognized token '{buffer}' >")
+                    output.append(("ERROR", f"Unrecognized token '{buffer}' >"))
 
         write_output_to_file(output, output_file)
 
