@@ -331,6 +331,7 @@ def lexer(input_program, output_file):
         write_output_to_file(output, output_file)
         parser = Parser(output)
         parser.parse_program()
+        parser.print_ast_tree()
 
     except FileNotFoundError:
         print(f"Error: The program '{input_program}' was not found.")

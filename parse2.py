@@ -1,3 +1,16 @@
+class Node:
+    def __init__(self, type, value=None):
+        self.type = type
+        self.value = value
+        self.children = []
+    def add_child(self, node):
+        if node:
+            self.children.append(node)
+    def __str__(self):
+        return f"{self.type} ({self.value})"
+
+
+
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
@@ -5,8 +18,9 @@ class Parser:
         self.current_token = self.tokens[self.index] if self.tokens else None
 
         # AST set up
+        self.root_node = None
         self.current_node = None
-        self.current_children = []
+        self.stack = []
 
     def advance(self):
         # move to the next token in the input
@@ -26,20 +40,110 @@ class Parser:
         if token_value and self.current_token[1] != token_value:
             return False
         return True
+    
+    def print_ast_tree(self, node=None, level=0, prefix=""):
+        if node is None:
+            node = self.root_node
+            print(f"{node}")
+        else:
+            print(f"{prefix}|-- {node}")
+            # can change this to space if the |- looks strange
+
+        for child in node.children:
+            new_prefix = prefix + "|   "
+            self.print_ast_tree(child, level + 1, new_prefix)
 
     def consume(self, token_type, token_value=None):
         # consume the current token if it matches, and advance
         if self.match(token_type, token_value):
+            token = self.current_token
             # if token_type == tempo, define, play, group
             # it becomes the current node
-
-            # else the token and it's value becomes the child
+            # expect tempo to be root node
+            if token_type == "KEYWORD":
+                if token_value == "tempo":
+                    self.root_node = Node("Program")
+                    tempo_node = Node("Tempo")
+                    self.root_node.add_child(tempo_node)
+                    self.current_node = tempo_node
+                    self.stack.append(tempo_node)
+                elif token_value == "define":
+                    define_node = Node("Define")
+                    self.root_node.add_child(define_node)
+                    self.current_node = define_node
+                    self.stack.append(define_node)
+                elif token_value == "play":
+                    play_node = Node("Play")
+                    self.root_node.add_child(play_node)
+                    self.current_node = play_node
+                    self.stack.append(play_node)
+                elif token_value == "generate":
+                    generate_node = Node("Generate")
+                    self.current_node.add_child(generate_node)
+                    self.current_node = generate_node
+                    self.stack.append(generate_node)
+                elif token_value == "rest":
+                    rest_node = Node("Rest")
+                    self.current_node.add_child(rest_node)
+                    self.current_node = rest_node
+                    self.stack.append(rest_node)
+            elif token_type == "TYPE_GROUP":
+                group_node = Node("Group")
+                self.root_node.add_child(group_node)
+                self.current_node = group_node
+                self.stack.append(group_node)
+            elif token_type == "IDENTIFIER":
+                identifier_node = Node("Identifier", token[1])
+                self.current_node.add_child(identifier_node)
+            elif token_type == "TIME_LITERAL":
+                if isinstance(self.current_node, Node) and self.current_node.type == "Tempo":
+                    self.current_node.value = token[1]
+                else:
+                    self.duration_value = token[1]
+            elif token_type == "TYPE_TIME":
+                duration_node = Node("Duration", f"{self.duration_value} {token[1]}")
+                self.current_node.add_child(duration_node)
+                if self.current_node.type == "Sound" or self.current_node.type == "Generate" or self.current_node.type == "Rest":
+                    self.stack.pop()
+                    self.current_node = self.stack[-1] if self.stack else None
+            elif token_type == "TYPE_PART":
+                type_node = Node("Type", token[1])
+                self.current_node.add_child(type_node)
+            elif token_type == "TYPE_INSTRUMENT":
+                instrument_node = Node("Instrument")
+                self.current_node.add_child(instrument_node)
+                self.current_node = instrument_node
+                self.stack.append(instrument_node)
+            elif token_type == "INSTRUMENT_LITERAL":
+                self.current_node.value = token[1]
+                self.stack.pop()
+                self.current_node = self.stack[-1] if self.stack else None
+            elif token_type == "TYPE_SOUND":
+                sound_node = Node("Sound", token[1])
+                self.current_node.add_child(sound_node)
+                self.current_node = sound_node
+                self.stack.append(sound_node)
+            elif token_type == "NOTE_LITERAL" or token_type == "CHORD_LITERAL":
+                value_node = Node("Value", token[1])
+                self.current_node.add_child(value_node)
+            elif token_type == "DESCRIPTION_LITERAL":
+                desc_node = Node("Description", token[1])
+                self.current_node.add_child(desc_node)
+            elif token_type == "OPENBRACK":
+                body_node = Node("Body")
+                self.current_node.add_child(body_node)
+                self.current_node = body_node
+                self.stack.append(body_node)
+            elif token_type == "CLOSEBRACK":
+                self.stack.pop()
+                self.current_node = self.stack[-1] if self.stack else None
+            
+        
+            # else the token and it's value becomes the child of the current node    
 
             # if the current node changes
             # print the current branch to the AST
             # reset the children 
-
-
             self.advance()
         else:
             raise SyntaxError(f"Expected {token_type} ({token_value}), but found {self.current_token}")
