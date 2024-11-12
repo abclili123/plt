@@ -118,3 +118,9 @@ The purpose of this test is to make sure that the lexer can gracefully handle er
 #### DFA of lexer:<br>
 clicking image removes blur<br>
 <img width="1383" alt="plt dfa" src="https://github.com/user-attachments/assets/43675d8d-74ab-4165-aab3-7938ca1029d4">
+
+
+#### Video Tutorial:<br>
+<link https://www.youtube.com/watch?v=Qz1vOPhSQWs>
+
+
