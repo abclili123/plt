@@ -121,6 +121,6 @@ clicking image removes blur<br>
 
 
 #### Video Tutorial:<br>
-<link https://www.youtube.com/watch?v=Qz1vOPhSQWs>
+<a href="https://www.youtube.com/watch?v=Qz1vOPhSQWs">link to video </a> 
 
 
