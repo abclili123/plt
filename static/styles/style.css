@@ -1,0 +1,53 @@
+body, html {
+    margin: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    justify-content: center;
+    align-items: center;
+    font-family: "Arial", sans-serif;
+}
+
+#title {
+    font-family: "Arial Black", sans-serif;
+    font-size: 24px;
+}
+
+#display-container {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+.display-component {
+    width: 250px;
+    height: 400px;
+    overflow: auto;
+}
+
+#editor {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#coding {
+    flex: 1;
+    margin-bottom: 15px;
+    resize: none;
+}
+
+#compile {
+    margin-top: auto;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#compile:hover {
+    background-color: #51c955; /* Slightly darker green on hover */
+}

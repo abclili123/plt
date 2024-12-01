@@ -1,5 +1,5 @@
 import sys
-from parser import Parser
+from src.parser import Parser
 
 ######## KEYWORDS ########
 KEYWORDS = [
@@ -176,7 +176,7 @@ def write_output_to_file(output, filename):
             output_file.write(str(token) + "\n")
     print(f"Output written to {filename}")
 
-def lexer(input_program, output_file):
+def lexer(input_program, output_file=None):
     try:
         with open(input_program, 'r') as program_body:
             output = []
@@ -328,7 +328,8 @@ def lexer(input_program, output_file):
                     handle_error(buffer)
                     output.append(("ERROR", f"Unrecognized token '{buffer}' >"))
 
-        write_output_to_file(output, output_file)
+        if output_file:
+            write_output_to_file(output, output_file)
         return output
 
     except FileNotFoundError:

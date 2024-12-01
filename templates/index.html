@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webkit Live</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+</head>
+<body>
+    <div id="title">Webkit Live</div>
+    <div id="display-container">
+        <div class="display-component" id="editor">Your code here:<br>
+            <textarea id="coding"></textarea>
+            <button id="compile" onclick="">run</button>
+        </div>
+        <pre class="display-component" id="lexer-output">Lexer Output<br></pre>
+        <pre class="display-component" id="parser-output">Parser Output<br></pre>
+        <pre class="display-component" id="code-gen-output">Code Generation Output<br></pre>
+    </div>
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
+</body>
+</html>
