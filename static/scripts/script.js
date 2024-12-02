@@ -87,6 +87,9 @@ function playNote(note, duration = 0.5, timeOffset = 0) {
     oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime + timeOffset);
     oscillator.start(audioCtx.currentTime + timeOffset);
     oscillator.stop(audioCtx.currentTime + timeOffset + duration);
+
+    // alternatively we can generate arrays of data we can pass to functions to execute
+    // the notes playing
 }
 
 document.getElementById('compile').addEventListener('click', function() {
