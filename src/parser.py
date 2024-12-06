@@ -6,10 +6,10 @@ class Node:
     def add_child(self, node):
         if node:
             self.children.append(node)
+    def remove_child(self):
+            self.children.pop()
     def __str__(self):
         return f"{self.type} ({self.value})"
-
-
 
 class Parser:
     def __init__(self, tokens, output_file):
@@ -119,7 +119,7 @@ class Parser:
             elif token_type == "TYPE_TIME":
                 duration_node = Node("Duration", f"{self.duration_value} {token[1]}")
                 self.current_node.add_child(duration_node)
-                if self.current_node.type == "Sound" or self.current_node.type == "Generate" or self.current_node.type == "Rest":
+                if self.current_node.type == "Sound" or self.current_node.type == "Generate" or self.current_node.type == "Rest" or self.current_node.type == "Concurrent":
                     self.stack.pop()
                     self.current_node = self.stack[-1] if self.stack else None
             elif token_type == "TYPE_PART":
@@ -135,16 +135,37 @@ class Parser:
                 self.stack.pop()
                 self.current_node = self.stack[-1] if self.stack else None
             elif token_type == "TYPE_SOUND":
+                # if the current node is concurrent add this node as a child
                 sound_node = Node("Sound", token[1])
                 self.current_node.add_child(sound_node)
                 self.current_node = sound_node
-                self.stack.append(sound_node)
+                # self.stack.append(sound_node)
             elif token_type == "NOTE_LITERAL" or token_type == "CHORD_LITERAL":
                 value_node = Node("Value", token[1])
+                print(f"value: {token[1]}")
                 self.current_node.add_child(value_node)
             elif token_type == "DESCRIPTION_LITERAL":
                 desc_node = Node("Description", token[1])
                 self.current_node.add_child(desc_node)
+            elif token_type == "COMMA":
+                if self.current_node.type != "Concurrent":
+                    # if this is the first comma, make a node called concurrent
+                    concurrent_node = Node("Concurrent")
+                    # add the current node as a child of concurrent
+                    concurrent_node.add_child(self.current_node)
+                    # replace the current node with concurrent
+                    # first remove sound as a child of body
+                    self.stack[-1].remove_child()
+
+                    # then add the current node as a child of body
+                    self.stack[-1].add_child(concurrent_node)
+
+                    # then make concurrent node the current node
+                    self.current_node = concurrent_node
+
+                    # add it to the stack
+                    self.stack.append(self.current_node)
+                    
             elif token_type == "OPENBRACK":
                 body_node = Node("Body")
                 self.current_node.add_child(body_node)
@@ -153,13 +174,16 @@ class Parser:
             elif token_type == "CLOSEBRACK":
                 self.stack.pop()
                 self.current_node = self.stack[-1] if self.stack else None
-            
-        
-            # else the token and it's value becomes the child of the current node    
 
-            # if the current node changes
-            # print the current branch to the AST
-            # reset the children 
+
+            print("tree")
+            print(f"parsing: {token}")
+            self.print_ast_tree()
+            print(f"current_node: {self.current_node}")
+            print("stack")
+            for node in self.stack:
+                print(node.type)
+            print()
             self.advance()
         else:
             self.error = f"Expected {token_type} ({token_value}), but found {self.current_token}"
