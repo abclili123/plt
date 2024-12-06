@@ -16,6 +16,8 @@ class Parser:
         self.tokens = tokens
         self.index = 0
         self.current_token = self.tokens[self.index] if self.tokens else None
+        self.last_token = None
+        self.comma_tracker = True
 
         # AST set up
         self.root_node = None
@@ -73,6 +75,9 @@ class Parser:
         # consume the current token if it matches, and advance
         if self.match(token_type, token_value):
             token = self.current_token
+            print(f"parsing: {token}")
+            print(f"last tok: {self.last_token}")
+
             # if token_type == tempo, define, play, group
             # it becomes the current node
             # expect tempo to be root node
@@ -110,7 +115,16 @@ class Parser:
                 self.stack.append(group_node)
             elif token_type == "IDENTIFIER":
                 identifier_node = Node("Identifier", token[1])
+
+                print(self.last_token[0])
+                if self.last_token[0] == "COMMA":
+                    # remove concurrent node from the stack
+                    self.stack.pop()
+                    # update the current node back to group
+                    self.current_node = self.stack[-1]
+
                 self.current_node.add_child(identifier_node)
+
             elif token_type == "TIME_LITERAL":
                 if isinstance(self.current_node, Node) and self.current_node.type == "Tempo":
                     self.current_node.value = token[1]
@@ -122,6 +136,7 @@ class Parser:
                 if self.current_node.type == "Sound" or self.current_node.type == "Generate" or self.current_node.type == "Rest" or self.current_node.type == "Concurrent":
                     self.stack.pop()
                     self.current_node = self.stack[-1] if self.stack else None
+                    self.comma_tracker = True
             elif token_type == "TYPE_PART":
                 type_node = Node("Type", token[1])
                 self.current_node.add_child(type_node)
@@ -144,11 +159,13 @@ class Parser:
                 value_node = Node("Value", token[1])
                 print(f"value: {token[1]}")
                 self.current_node.add_child(value_node)
+
             elif token_type == "DESCRIPTION_LITERAL":
                 desc_node = Node("Description", token[1])
                 self.current_node.add_child(desc_node)
             elif token_type == "COMMA":
-                if self.current_node.type != "Concurrent":
+                if self.comma_tracker:
+                    self.comma_tracker = False
                     # if this is the first comma, make a node called concurrent
                     concurrent_node = Node("Concurrent")
                     # add the current node as a child of concurrent
@@ -165,6 +182,8 @@ class Parser:
 
                     # add it to the stack
                     self.stack.append(self.current_node)
+                elif self.last_token[0] == 'NOTE_LITERAL':
+                    self.current_node = self.stack[-1]
                     
             elif token_type == "OPENBRACK":
                 body_node = Node("Body")
@@ -175,9 +194,9 @@ class Parser:
                 self.stack.pop()
                 self.current_node = self.stack[-1] if self.stack else None
 
+            self.last_token = token
 
             print("tree")
-            print(f"parsing: {token}")
             self.print_ast_tree()
             print(f"current_node: {self.current_node}")
             print("stack")
