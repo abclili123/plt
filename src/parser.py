@@ -229,7 +229,7 @@ class Parser:
 
     def parse_sounds(self):
         # parse the sounds non-terminal
-        if self.match("TYPE_SOUND", "note"):
+        if self.match("TYPE_SOUND"):
             self.parse_note_or_chord()
             self.parse_optional_note_chord()
             self.parse_duration()

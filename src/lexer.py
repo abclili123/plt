@@ -1,5 +1,5 @@
 import sys
-from src.parser import Parser
+from parser import Parser
 
 ######## KEYWORDS ########
 KEYWORDS = [
