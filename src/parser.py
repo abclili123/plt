@@ -207,8 +207,6 @@ class Parser:
         else:
             self.error = f"Expected {token_type} ({token_value}), but found {self.current_token}"
             self.errors.append(self.error)
-            #self.print_ast_tree()
-            #raise SyntaxError(f"Expected {token_type} ({token_value}), but found {self.current_token}")
 
     def parse_program(self):
         # parse the program non-terminal
