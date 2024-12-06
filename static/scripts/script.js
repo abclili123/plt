@@ -2,7 +2,134 @@
 var audioCtx;
 var globalAnalyser;
 var globalGain;
-var frequencies;
+var noteFrequencies;
+
+const loops = {
+    bass_guitar: [
+        { instrument: 'bass', note: 'C', duration: 1 } // Single note
+    ],
+    bass_drums: [
+        // Simultaneous notes
+        { instrument: 'bass', note: ['A', 'B'], duration: 1 }, 
+        // Sequential note
+        { instrument: 'bass', note: 'A', duration: 1 } 
+    ],
+    hat: [
+        { instrument: 'hihat', note: 'B', duration: 1 } // Single note
+    ]
+};
+
+// Define groups for simultaneous or sequential playback
+const groups = {
+    drum_kit: [
+        ['bass_guitar', 'hat'], // Simultaneous playback
+        'hat',                  // Sequential playback
+        'bass_drums'            // Sequential playback
+    ]
+};
+
+instruments = {
+    bass: (frequency, duration, time) => {
+        const oscillator = audioCtx.createOscillator();
+        oscillator.type = 'sawtooth'; // Example bass sound
+        oscillator.frequency.setValueAtTime(frequency, time);
+
+        const gainNode = audioCtx.createGain();
+        gainNode.gain.setValueAtTime(0.5, time); // Set volume
+        gainNode.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(globalGain);
+
+        oscillator.start(time);
+        oscillator.stop(time + duration);
+    },
+    hihat: (frequency, duration, time) => {
+        const oscillator = audioCtx.createOscillator();
+        oscillator.type = 'triangle'; // Example hi-hat sound
+        oscillator.frequency.setValueAtTime(frequency, time);
+
+        const gainNode = audioCtx.createGain();
+        gainNode.gain.setValueAtTime(0.1, time); // Softer volume for hi-hat
+        gainNode.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(globalGain);
+
+        oscillator.start(time);
+        oscillator.stop(time + duration);
+    }
+}; 
+
+function playGroup(groupName, tempo, startTime = audioCtx.currentTime) {
+    const group = groups[groupName];
+    console.log('Playing group:', groupName, 'with structure:', group);
+
+    if (!group) {
+        console.error(`Group "${groupName}" is not defined.`);
+        return;
+    }
+
+    if (!Array.isArray(group)) {
+        console.error(`Group "${groupName}" is not defined as an array.`);
+        return;
+    }
+
+    group.forEach(loopName => {
+        if (Array.isArray(loopName)) {
+            loopName.forEach(innerLoopName => {
+                if (loops[innerLoopName]) {
+                    playLoop(innerLoopName, tempo, startTime);
+                } else {
+                    console.error(`Loop "${innerLoopName}" is not defined.`);
+                }
+            });
+        } else {
+            if (loops[loopName]) {
+                playLoop(loopName, tempo, startTime);
+                startTime += calculateLoopDuration(loopName, tempo);
+            } else {
+                console.error(`Loop "${loopName}" is not defined.`);
+            }
+        }
+    });
+}
+
+
+function calculateLoopDuration(loopName, tempo) {
+    const beatDuration = 60 / tempo;
+    const loop = loops[loopName];
+
+    return loop.reduce((totalDuration, step) => totalDuration + (step.duration || 1) * beatDuration, 0);
+}
+
+function playLoop(loopName, tempo, startTime = audioCtx.currentTime) {
+    const loop = loops[loopName];
+    const beatDuration = 60 / tempo; // Duration of one beat in seconds
+
+    loop.forEach(step => {
+        const time = startTime;
+
+        if (Array.isArray(step.note)) {
+            // Play simultaneous notes
+            step.note.forEach(note => {
+                const frequency = noteFrequencies[`${note}4`]; // Default octave
+                instruments[step.instrument](frequency, beatDuration, time);
+            });
+        } else {
+            // Play single note
+            const frequency = noteFrequencies[`${step.note}4`]; // Default octave
+            instruments[step.instrument](frequency, beatDuration, time);
+        }
+
+        // Increment startTime for the next step
+        startTime += step.duration * beatDuration;
+    });
+}
+
+
+
+
 
 // def frequencies for notes
 function generateFrequencyMap() {
@@ -57,23 +184,24 @@ function initAudio() {
     peak();
 
     // freq map
-    frequencies = generateFrequencyMap();
+    noteFrequencies = generateFrequencyMap();
 
     // define usable instruments
 }
 
-document.addEventListener("DOMContentLoaded", function(event) {
+function play(){
     initAudio();
-});
+    playGroup('drum_kit', 120); // Tempo = 120 BPM
+}
 
 // everything above this is boiler plate and will be in every program
 function playNote(note, duration = 0.5, timeOffset = 0) {
-    if (!frequencies[note]) {
+    if (!noteFrequencies[note]) {
         console.error(`Note ${note} not found in frequency map.`);
         return;
     }
 
-    const frequency = frequencies[note];
+    const frequency = noteFrequencies[note];
 
     // we would create different oscs for each instrument keyword 
     // move this into the 'define usable instruments' comment
@@ -116,10 +244,6 @@ document.getElementById('compile').addEventListener('click', function() {
     .catch(error => console.error('Error:', error));
 });
 
-
-
-
-
 var maxAlltime = 0
 function peak() {
     globalAnalyser.fftSize = 2048;
@@ -136,121 +260,3 @@ function peak() {
     }
     requestAnimationFrame(peak);
 }
-{
-    
-
-    window.addEventListener('keydown', keyDown, false);
-    window.addEventListener('keyup', keyUp, false);
-
-    activeOscillators = {}
-    activeGain = {}
-    activeAM = {}
-    let totalOsc = 0
-
-    function keyDown(event) {
-        const key = (event.detail || event.which).toString();
-        if (keyboardFrequencyMap[key] && !activeOscillators[key]) {
-            playNote(key);
-        }
-    }
-
-    function keyUp(event) {
-        const key = (event.detail || event.which).toString();
-        if (keyboardFrequencyMap[key] && activeOscillators[key]) {
-            activeGain[key].gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + .5)
-            activeGain[key].gain.setTargetAtTime(0, audioCtx.currentTime, 1)
-            if(keyboardFrequencyMap[key] && activeAM[key]){
-                activeAM[key].gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + .5)
-                activeAM[key].gain.setTargetAtTime(0, audioCtx.currentTime, 1)
-                delete activeAM[key];
-            }
-            let arr = activeOscillators[key]
-            let l = arr.length
-            for(let i=0; i<l; i++){
-                arr.pop().stop(audioCtx.currentTime+0.6)
-                totalOsc -= 1
-            }
-            delete activeOscillators[key];
-            delete activeGain[key];
-        }
-    }
-
-    function playNote(key) {
-        const gainNode = audioCtx.createGain();
-        gainNode.connect(globalGain)
-        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-        gainNode.gain.setTargetAtTime(0.5, audioCtx.currentTime, 1);
-
-        let oscs = []
-        totalOsc += 1
-        oscs[0] = audioCtx.createOscillator();
-        oscs[0].type = document.getElementById('wave').value
-        oscs[0].frequency.setValueAtTime(keyboardFrequencyMap[key], audioCtx.currentTime)
-        oscs[0].connect(gainNode)
-        oscs[0].start();
-
-        let activateLfo = document.getElementById('lfo').checked
-        if(activateLfo){
-            const lfo = audioCtx.createOscillator();
-            lfo.frequency.value = 15;
-            lfoGain = audioCtx.createGain();
-            lfoGain.gain.value = 50;
-            lfo.connect(lfoGain).connect(oscs[0].frequency);
-            lfo.start();
-        }
-
-        // initiate AM
-        let yesAm = document.getElementById('yesAm').checked
-        let am = document.getElementById('am').value
-        if(yesAm){
-            const modulatorFreq = audioCtx.createOscillator();
-            modulatorFreq.frequency.value = am;
-            const depth = audioCtx.createGain();
-            depth.gain.setValueAtTime(0, audioCtx.currentTime);
-            depth.gain.setTargetAtTime(0.5, audioCtx.currentTime, 1);
-            gainNode.gain.setTargetAtTime(1.0 - depth.gain.value, audioCtx.currentTime, 1);
-            modulatorFreq.connect(depth).connect(gainNode.gain)
-            modulatorFreq.start();
-            activeAM[key] = depth
-        }
-
-        //initiate FM if checked
-        let fm = document.getElementById('fm').value
-        let modulationIndex = audioCtx.createGain();
-        let fmInd = document.getElementById('fmInd').value
-        if(fm>0){
-            const fmFreq = audioCtx.createOscillator();
-            modulationIndex.gain.value = fmInd;
-            fmFreq.frequency.value = fm;
-            fmFreq.connect(modulationIndex);
-            modulationIndex.connect(oscs[0].frequency)
-            fmFreq.start();
-        }
-
-        // initiate additive synthesis if checked
-        let additive = document.getElementById('additive').value;
-        if(additive > 0) {
-            for (let i = 1; i <= additive; i++) {
-                totalOsc += 1
-                oscs[i] = audioCtx.createOscillator();
-                oscs[i].type = document.getElementById('wave').value
-                oscs[i].frequency.setValueAtTime(keyboardFrequencyMap[key] * i, audioCtx.currentTime)
-                if (i > 0 && i < 3) {
-                    oscs[i].frequency.setValueAtTime(keyboardFrequencyMap[key] * i + (Math.random() * 15), audioCtx.currentTime)
-                } else if (i >= 3) {
-                    oscs[i].frequency.setValueAtTime(keyboardFrequencyMap[key] * i - (Math.random() * 15), audioCtx.currentTime)
-                }
-                if (fm > 0) {
-                    modulationIndex.connect(oscs[i].frequency)
-                }
-                oscs[i].connect(gainNode)
-                oscs[i].start();
-            }
-        }
-
-        globalGain.gain.setTargetAtTime(0.8/totalOsc, audioCtx.currentTime, 1);
-
-        activeOscillators[key] = oscs
-        activeGain[key] = gainNode
-    }
-});
