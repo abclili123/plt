@@ -117,11 +117,12 @@ class Parser:
                 identifier_node = Node("Identifier", token[1])
 
                 print(self.last_token[0])
-                if self.last_token[0] == "COMMA":
-                    # remove concurrent node from the stack
-                    self.stack.pop()
-                    # update the current node back to group
-                    self.current_node = self.stack[-1]
+                # if self.last_token[0] != "COMMA" and self.comma_tracker == True:
+                #     self.comma_tracker == False
+                #     # remove concurrent node from the stack
+                #     self.stack.pop()
+                #     # update the current node back to group
+                #     self.current_node = self.stack[-1]
 
                 self.current_node.add_child(identifier_node)
 
@@ -168,11 +169,18 @@ class Parser:
                     self.comma_tracker = False
                     # if this is the first comma, make a node called concurrent
                     concurrent_node = Node("Concurrent")
-                    # add the current node as a child of concurrent
-                    concurrent_node.add_child(self.current_node)
-                    # replace the current node with concurrent
-                    # first remove sound as a child of body
-                    self.stack[-1].remove_child()
+                    if self.last_token[1] == 'IDENTIFIER': # in a group node
+                        # the current node is body
+                        # move the last child into the concurrent node
+                        concurrent_node.add_child(self.current_node.children[-1])
+                        self.current_node.remove_child()
+
+                    else:
+                        # add the current node as a child of concurrent
+                        concurrent_node.add_child(self.current_node)
+                        # replace the current node with concurrent
+                        # first remove sound as a child of body
+                        self.stack[-1].remove_child()
 
                     # then add the current node as a child of body
                     self.stack[-1].add_child(concurrent_node)
