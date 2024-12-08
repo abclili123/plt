@@ -1,6 +1,6 @@
 import sys
-from parser import Parser
-import code_gen
+from .parser import Parser
+from .code_gen import Generator
 
 ######## KEYWORDS ########
 KEYWORDS = [
