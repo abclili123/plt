@@ -20,10 +20,9 @@ class Parser:
         self.comma_tracker = True
 
         # verify identifiers
-        self.group_identifiers = [] # these are names of groups
-        self.loop_or_segment_identifiers = [] # these are the names of loops and segments
-        self.play_identifiers = [] # these are idenfiers that follow play statements
-        self.identifiers_in_groups = [] # these are identifiers within group statements
+        self.group_identifiers = set() # these are names of groups
+        self.loop_or_segment_identifiers = set() # these are the names of loops and segments
+        self.identifiers_in_groups = set() # these are identifiers within group statements
 
         # AST set up
         self.root_node = None
@@ -52,15 +51,90 @@ class Parser:
             return False
         return True
     
-    def verify_identifiers():
-        # traverse the tree
+    def verify_identifiers(self):
+        success = True
 
-        # if you are at a group node, verify all identifiers in the body are in self.loop_or_segment_identifiers
+        def _collect_identifiers(node):
+            if node.type == "Group":
+                # all identifiers are in the body node
+                for child in node.children:
+                    if child.type == "Identifier":
+                        self.group_identifiers.add(child.value)
+                    
+                    if child.type == "Body":
+                        for child in child.children:
+                            # identifiers are either directly in the body
+                            if child.type == "Identifier":
+                                self.identifiers_in_groups.add(child.value)
+                            # or identifiers are nested in the concurrent nodes
+                            elif child.type == "Concurrent":
+                                for concurrent_child in child.children:
+                                    if concurrent_child.type == "Identifier":
+                                        self.identifiers_in_groups.add(concurrent_child.value)
+            
+            if node.type == "Define":
+                for child in node.children:
+                    if child.type == "Identifier":
+                        self.loop_or_segment_identifiers.add(child.value)
 
-        # if you are in a play node
-            # if the play node has a body node as a child pass becuase it is defined and played at the same time
-            # else verify all identifiers in the play node are in self.identifiers_in_groups or self.loop_or_segment_identifiers
-        pass
+            for child in node.children:
+                _collect_identifiers(child)
+
+        def _verify_node(node):
+            nonlocal success
+
+            # if you are at a group node, verify all identifiers in the body are in self.loop_or_segment_identifiers
+            if node.type == "Group":
+                # all identifiers are in the body node
+                body_node = next((child for child in node.children if child.type == "Body"), None)
+                
+                if body_node:
+                    # verify identifiers in the body
+                    _verify_body_identifiers(body_node)
+                
+            # if you are in a play node
+            if node.type == "Play":
+                # if the play node has a body node as a child pass
+                body_node = next((child for child in node.children if child.type == "Body"), None)
+                if body_node:
+                    pass
+                # else verifty all identifiers are in self.identifiers_in_groups or self.loop_or_segment_identifiers
+                else:
+                    for child in node.children:
+                        if child.type == "Identifier" and child.value not in self.group_identifiers and child.value not in self.loop_or_segment_identifiers:
+                            print(f"Invalid identifier in play: {child.value}")
+                            success = False
+                        elif child.type == "Concurrent":
+                            for concurrent_child in child.children:
+                                if concurrent_child.type == "Identifier" and concurrent_child.value not in self.group_identifiers and concurrent_child.value not in self.loop_or_segment_identifiers:
+                                    print(f"Invalid identifier in play: {concurrent_child.value}")
+                                    success = False
+                        
+            for child in node.children:
+                _verify_node(child)
+        
+        def _verify_body_identifiers(body_node):
+            nonlocal success
+
+            for child in body_node.children:
+                # identifiers are either directly in the body
+                if child.type == "Identifier":
+                    if child.value not in self.loop_or_segment_identifiers:
+                        print(f"Invalid identifier in group body: {child.value}")
+                        success = False
+                # or identifiers are nested in the concurrent nodes
+                elif child.type == "Concurrent":
+                    for concurrent_child in child.children:
+                        if concurrent_child.type == "Identifier":
+                            if concurrent_child.value not in self.loop_or_segment_identifiers:
+                                print(f"Invalid identifier in concurrent body: {concurrent_child.value}")
+                                success = False
+        
+        _collect_identifiers(self.root_node)
+        _verify_node(self.root_node)
+        if success:
+            print("successful verify identifiers")
+
     
     def print_ast_tree(self, node=None, level=0, prefix=""):
         output_string = ""
@@ -91,12 +165,12 @@ class Parser:
         # consume the current token if it matches, and advance
         if self.match(token_type, token_value):
             token = self.current_token
-            print(f"parsing: {token}")
-            print(f"last tok: {self.last_token}")
-            print(f"current_node: {self.current_node}")
-            print("stack before")
-            for node in self.stack:
-                print(node.type)
+            # print(f"parsing: {token}")
+            # print(f"last tok: {self.last_token}")
+            # print(f"current_node: {self.current_node}")
+            # print("stack before")
+            # for node in self.stack:
+            #     print(node.type)
 
             # if token_type == tempo, define, play, group
             # it becomes the current node
@@ -142,21 +216,6 @@ class Parser:
                     self.current_node = self.stack[-1] if self.stack else None # set current node to body
 
                 self.current_node.add_child(identifier_node)
-
-                # if current node is a group
-                if self.current_node.type == "Group":
-                    self.group_identifiers.append(identifier_node)
-
-                # if current node is define
-                elif self.current_node.type == "Define":
-                    self.loop_or_segment_identifiers.append(identifier_node)
-
-                # if current node is play
-                elif self.current_node.type == "Play" or self.stack[-2].type == "Play":
-                    self.play_identifiers.append(identifier_node)
-
-                elif self.stack[-2].type == "Group":
-                    self.identifiers_in_groups.append(identifier_node)
 
             elif token_type == "TIME_LITERAL":
                 if isinstance(self.current_node, Node) and self.current_node.type == "Tempo":
@@ -255,16 +314,16 @@ class Parser:
 
             self.last_token = token
 
-            print("tree")
-            self.print_ast_tree()
-            print(self.comma_tracker)
-            print()
-            print(f"current_node: {self.current_node}")
-            print("stack after")
-            for node in self.stack:
-                print(node.type)
-            print()
-            print("___________________________________")
+            # print("tree")
+            # self.print_ast_tree()
+            # print(self.comma_tracker)
+            # print()
+            # print(f"current_node: {self.current_node}")
+            # print("stack after")
+            # for node in self.stack:
+            #     print(node.type)
+            # print()
+            # print("___________________________________")
             self.advance()
         else:
             self.error = f"Expected {token_type} ({token_value}), but found {self.current_token}"
