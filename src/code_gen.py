@@ -30,7 +30,7 @@ class Generator:
         self.segments = {}
         self.groups = {}
         self.tempo = None
-        self.output = []
+        self.play_sequence = []
         self.current_instrument = None
 
     def _process_sound(self, node):
@@ -136,19 +136,16 @@ class Generator:
         
         self.groups[identifier.value] = group_parts
 
-    def _process_play(self, node):
-        play_sequence = []
-        
+    def _process_play(self, node):        
         for child in node.children:
             if child.type == "Identifier":
-                play_sequence.append(child.value)
+                self.play_sequence.append(child.value)
             elif child.type == "Concurrent":
                 concurrent_parts = [c.value for c in child.children if c.type == "Identifier"]
-                play_sequence.append(concurrent_parts)
+                for c in concurrent_parts:
+                    self.play_sequence.append(c)
             elif child.type == "Body":
                 self._process_define(node)
-        
-        self.output.append(play_sequence)
 
     def generate_code(self, root_node):
         # tree traversal
@@ -181,5 +178,5 @@ class Generator:
             'loops': self.loops,
             'segments': self.segments,
             'groups': self.groups,
-            'play_sequence': self.output
+            'play_sequence': self.play_sequence
         }
