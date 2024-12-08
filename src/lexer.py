@@ -1,5 +1,6 @@
 import sys
 from parser import Parser
+import code_gen
 
 ######## KEYWORDS ########
 KEYWORDS = [
@@ -350,5 +351,8 @@ if __name__ == "__main__":
         print(f"Parsing {input_file}")
         parser = Parser(output, parser_output_file)
         parser.parse_program()
+        verify = parser.verify_identifiers()
         parser.print_ast_tree()
-        parser.verify_identifiers()
+
+        if not parser.error:
+            code_gen.generate_code(parser.root_node)

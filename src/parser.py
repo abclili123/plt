@@ -102,12 +102,14 @@ class Parser:
                 else:
                     for child in node.children:
                         if child.type == "Identifier" and child.value not in self.group_identifiers and child.value not in self.loop_or_segment_identifiers:
-                            print(f"Invalid identifier in play: {child.value}")
+                            self.error = f"Invalid identifier in play: {child.value}"
+                            self.errors.append(self.error)
                             success = False
                         elif child.type == "Concurrent":
                             for concurrent_child in child.children:
                                 if concurrent_child.type == "Identifier" and concurrent_child.value not in self.group_identifiers and concurrent_child.value not in self.loop_or_segment_identifiers:
-                                    print(f"Invalid identifier in play: {concurrent_child.value}")
+                                    self.error = f"Invalid identifier in play: {concurrent_child.value}"
+                                    self.errors.append(self.error)
                                     success = False
                         
             for child in node.children:
@@ -120,20 +122,23 @@ class Parser:
                 # identifiers are either directly in the body
                 if child.type == "Identifier":
                     if child.value not in self.loop_or_segment_identifiers:
-                        print(f"Invalid identifier in group body: {child.value}")
+                        self.error = f"Invalid identifier in group body: {child.value}"
+                        self.errors.append(self.error)
                         success = False
                 # or identifiers are nested in the concurrent nodes
                 elif child.type == "Concurrent":
                     for concurrent_child in child.children:
                         if concurrent_child.type == "Identifier":
                             if concurrent_child.value not in self.loop_or_segment_identifiers:
-                                print(f"Invalid identifier in concurrent body: {concurrent_child.value}")
+                                self.error = f"Invalid identifier in concurrent body: {concurrent_child.value}"
+                                self.errors.append(self.error)
                                 success = False
         
         _collect_identifiers(self.root_node)
         _verify_node(self.root_node)
         if success:
-            print("successful verify identifiers")
+            return True
+        return False
 
     
     def print_ast_tree(self, node=None, level=0, prefix=""):

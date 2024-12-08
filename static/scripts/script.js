@@ -2,20 +2,22 @@
 var audioCtx;
 var globalAnalyser;
 var globalGain;
-var noteFrequencies;
+let noteFrequencies;
+let chordFrequencies;
 
 const loops = {
     bass_guitar: [
-        { instrument: 'bass', note: 'C', duration: 1 } // Single note
+        { instrument: 'bass', sounds: ['note C', 'chord B'], duration: 1 },  // Note + Chord together
+        { instrument: 'bass', sounds: 'rest', duration: 1 },  // Rest
+        { instrument: 'bass', sounds: 'note G', duration: 1 },  // Single note
+        { instrument: 'bass', sounds: 'chord A', duration: 1 }  // Single chord
     ],
     bass_drums: [
-        // Simultaneous notes
-        { instrument: 'bass', note: ['A', 'B'], duration: 1 }, 
-        // Sequential note
-        { instrument: 'bass', note: 'A', duration: 1 } 
+        { instrument: 'bass', sounds: ['note A', 'note B'], duration: 1 }, // Simultaneous notes
+        { instrument: 'bass', sounds: 'note A', duration: 1 } // Sequential note
     ],
     hat: [
-        { instrument: 'hihat', note: 'B', duration: 1 } // Single note
+        { instrument: 'hihat', sounds: 'note B', duration: 1 } // Single note
     ]
 };
 
@@ -108,28 +110,56 @@ function playLoop(loopName, tempo, startTime = audioCtx.currentTime) {
     const beatDuration = 60 / tempo; // Duration of one beat in seconds
 
     loop.forEach(step => {
-        const time = startTime;
+        let time = startTime;
 
-        if (Array.isArray(step.note)) {
-            // Play simultaneous notes
-            step.note.forEach(note => {
-                const frequency = noteFrequencies[`${note}4`]; // Default octave
-                instruments[step.instrument](frequency, beatDuration, time);
+        // Check for 'rest'
+        if (step.sounds === 'rest') {
+            // Skip playing any sound during a rest, just increment time
+            time += step.duration * beatDuration;
+            return;  // Exit this iteration of the loop and move to the next step
+        }
+
+        // Handle other sound types (notes and chords)
+        if (Array.isArray(step.sounds)) {
+            // Play simultaneous sounds (notes or chords)
+            step.sounds.forEach(sound => {
+                if (sound.startsWith('note')) {
+                    const note = sound.split(' ')[1];
+                    const frequency = noteFrequencies[`${note}4`]; // Default octave is 4
+                    instruments[step.instrument](frequency, beatDuration, time);
+                } else if (sound.startsWith('chord')) {
+                    const chord = sound.split(' ')[1];
+                    if (chordFrequencies[chord]) {
+                        chordFrequencies[chord].forEach(frequency => {
+                            instruments[step.instrument](frequency, beatDuration, time);
+                        });
+                    } else {
+                        console.error(`Chord "${chord}" is not defined.`);
+                    }
+                }
             });
         } else {
-            // Play single note
-            const frequency = noteFrequencies[`${step.note}4`]; // Default octave
-            instruments[step.instrument](frequency, beatDuration, time);
+            // Play a single note or chord
+            if (step.sounds.startsWith('note')) {
+                const note = step.sounds.split(' ')[1];
+                const frequency = noteFrequencies[`${note}4`]; // Default octave is 4
+                instruments[step.instrument](frequency, beatDuration, time);
+            } else if (step.sounds.startsWith('chord')) {
+                const chord = step.sounds.split(' ')[1];
+                if (chordFrequencies[chord]) {
+                    chordFrequencies[chord].forEach(frequency => {
+                        instruments[step.instrument](frequency, beatDuration, time);
+                    });
+                } else {
+                    console.error(`Chord "${chord}" is not defined.`);
+                }
+            }
         }
 
         // Increment startTime for the next step
         startTime += step.duration * beatDuration;
     });
 }
-
-
-
-
 
 // def frequencies for notes
 function generateFrequencyMap() {
@@ -171,6 +201,47 @@ function generateFrequencyMap() {
     return frequencyMap;
 }
 
+function generateChordMap() {
+    const chordMap = {};
+
+    // Chord intervals for major and minor
+    const chordIntervals = {
+        'maj': [0, 4, 7], // Major: Root, Major Third, Perfect Fifth
+        'm': [0, 3, 7],   // Minor: Root, Minor Third, Perfect Fifth
+    };
+
+    // Notes with natural, sharp, and flat notes
+    const noteNames = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'];
+
+    // Iterate over each note from A to G
+    noteNames.forEach(rootNote => {
+        // Generate major and minor chords for octaves 1 to 7
+        for (let octave = 1; octave <= 7; octave++) {
+            Object.keys(chordIntervals).forEach(chordType => {
+                const intervals = chordIntervals[chordType];
+                const chordName = `${rootNote}${chordType === 'maj' ? '' : chordType}${octave}`;
+
+                // Find the root note's frequency
+                const rootFrequency = noteFrequencies[rootNote + octave];  // Example: 'A4', 'C5'
+
+                // Create an array to store the frequencies for the chord
+                const chordFrequencies = intervals.map(interval => {
+                    const noteIndex = noteNames.indexOf(rootNote) + interval;
+                    const wrappedIndex = (noteIndex + 12) % 12;  // Wrap around to avoid negative indexes
+                    const noteName = noteNames[wrappedIndex];
+                    const frequency = noteFrequencies[noteName + octave];
+                    return frequency;
+                });
+
+                // Store the chord frequencies in the chord map
+                chordMap[chordName] = chordFrequencies;
+            });
+        }
+    });
+
+    return chordMap;
+}
+
 // audio set up
 function initAudio() {
     // this is so you can hear the audio
@@ -185,39 +256,29 @@ function initAudio() {
 
     // freq map
     noteFrequencies = generateFrequencyMap();
+    chordFrequencies = generateChordMap();
+}
 
-    // define usable instruments
+var maxAlltime = 0
+function peak() {
+    globalAnalyser.fftSize = 2048;
+    var bufferLength = globalAnalyser.frequencyBinCount;
+    var dataArray = new Uint8Array(bufferLength);
+    globalAnalyser.getByteTimeDomainData(dataArray);
+
+    //values range 0-255, over the range -1,1, so we find the max value from a frame, and then scale
+    var maxValue = (dataArray.reduce((max, curr) => (curr > max ? curr : max)) - 128) / 127.0;
+    //console.log(maxValue);
+    if (maxValue > maxAlltime){
+        maxAlltime = maxValue;
+        //console.log("New record! -> " + maxAlltime);
+    }
+    requestAnimationFrame(peak);
 }
 
 function play(){
     initAudio();
     playGroup('drum_kit', 120); // Tempo = 120 BPM
-}
-
-// everything above this is boiler plate and will be in every program
-function playNote(note, duration = 0.5, timeOffset = 0) {
-    if (!noteFrequencies[note]) {
-        console.error(`Note ${note} not found in frequency map.`);
-        return;
-    }
-
-    const frequency = noteFrequencies[note];
-
-    // we would create different oscs for each instrument keyword 
-    // move this into the 'define usable instruments' comment
-    const oscillator = audioCtx.createOscillator(); // Create oscillator
-    oscillator.type = 'sine'; // Choose waveform type: sine, square, triangle, sawtooth
-    oscillator.connect(globalGain);
-
-    // Start and stop the oscillator
-    // we would generate these lines of code from the play statements
-    // calculating timeOffset and duration from tempo and beats and rests
-    oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime + timeOffset);
-    oscillator.start(audioCtx.currentTime + timeOffset);
-    oscillator.stop(audioCtx.currentTime + timeOffset + duration);
-
-    // alternatively we can generate arrays of data we can pass to functions to execute
-    // the notes playing
 }
 
 document.getElementById('compile').addEventListener('click', function() {
@@ -243,20 +304,3 @@ document.getElementById('compile').addEventListener('click', function() {
     })
     .catch(error => console.error('Error:', error));
 });
-
-var maxAlltime = 0
-function peak() {
-    globalAnalyser.fftSize = 2048;
-    var bufferLength = globalAnalyser.frequencyBinCount;
-    var dataArray = new Uint8Array(bufferLength);
-    globalAnalyser.getByteTimeDomainData(dataArray);
-
-    //values range 0-255, over the range -1,1, so we find the max value from a frame, and then scale
-    var maxValue = (dataArray.reduce((max, curr) => (curr > max ? curr : max)) - 128) / 127.0;
-    //console.log(maxValue);
-    if (maxValue > maxAlltime){
-        maxAlltime = maxValue;
-        //console.log("New record! -> " + maxAlltime);
-    }
-    requestAnimationFrame(peak);
-}
