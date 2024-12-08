@@ -1,4 +1,4 @@
-from .parser import Node
+import random
 
 # for these each elem will loop like
 # identifier: [
@@ -22,15 +22,6 @@ plays = ""
 # this will look like
 # not sure yet
 control = ""
-
-# def generate_code(root_node):
-#     # traverse tree
-#     def _write_node(node):
-
-#         for child in node:
-#             _write_node(child)
-
-#     _write_node(root_node)
 
 class Generator:
     def __init__(self):
@@ -56,7 +47,7 @@ class Generator:
                     if value:
                         sounds.append(f"{sound_type} {value}")
                 elif child.type == "Duration":
-                    duration = int(child.value.split()[0])
+                    duration = float(child.value.split()[0])
             
             return {
                 'instrument': self.current_instrument,
@@ -67,7 +58,7 @@ class Generator:
         # handle single sounds
         elif node.type == "Sound":
             value = next((c.value for c in node.children if c.type == "Value"), None)
-            duration = next((int(c.value.split()[0]) for c in node.children if c.type == "Duration"), None)
+            duration = next((float(c.value.split()[0]) for c in node.children if c.type == "Duration"), None)
             
             return {
                 'instrument': self.current_instrument,
@@ -75,9 +66,29 @@ class Generator:
                 'duration': duration
             }
         
+        # handle generate
+        elif node.type == "Generate":
+            duration = next((float(c.value.split()[0]) for c in node.children if c.type == "Duration"), None)
+            sound_type = next((c.value for c in node.children if c.type == "Sound"), None)
+
+            root = random.choice(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'Ab', 'A#', 'Bb', 'B#', 'C#', 'Db', 'D#', 'Eb', 'E#', 'Fb', 'F#', 'Gb', 'G#'])
+            octave = random.choice(['1', '2', '3', '4', '5', '6', '7'])
+
+            if sound_type == "note":
+                sound = root + octave
+            else:
+                m = random.choice(['', 'm'])
+                sound = root + octave + m
+
+            return {
+                'instrument': self.current_instrument,
+                'sounds': sound,
+                'duration': duration
+            }
+        
         # handle rests
         elif node.type == "Rest":
-            duration = next((int(c.value.split()[0]) for c in node.children if c.type == "Duration"), None)
+            duration = next((float(c.value.split()[0]) for c in node.children if c.type == "Duration"), None)
             return {
                 'instrument': self.current_instrument,
                 'sounds': "rest",
@@ -99,7 +110,7 @@ class Generator:
                 self.current_instrument = child.value
             elif child.type == "Concurrent":
                 sounds_list.append(self._process_sound(child))
-            elif child.type in ["Sound", "Rest"]:
+            elif child.type in ["Sound", "Rest", "Generate"]:
                 sounds_list.append(self._process_sound(child))
         
         # put the found value in corresponding dictionary
@@ -134,6 +145,8 @@ class Generator:
             elif child.type == "Concurrent":
                 concurrent_parts = [c.value for c in child.children if c.type == "Identifier"]
                 play_sequence.append(concurrent_parts)
+            elif child.type == "Body":
+                self._process_define(node)
         
         self.output.append(play_sequence)
 

@@ -353,6 +353,3 @@ if __name__ == "__main__":
         parser.parse_program()
         verify = parser.verify_identifiers()
         parser.print_ast_tree()
-
-        if not parser.error:
-            code_gen.generate_code(parser.root_node)
