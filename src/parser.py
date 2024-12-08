@@ -75,6 +75,12 @@ class Parser:
         # consume the current token if it matches, and advance
         if self.match(token_type, token_value):
             token = self.current_token
+            print(f"parsing: {token}")
+            print(f"last tok: {self.last_token}")
+            print(f"current_node: {self.current_node}")
+            print("stack before")
+            for node in self.stack:
+                print(node.type)
 
             # if token_type == tempo, define, play, group
             # it becomes the current node
@@ -134,11 +140,16 @@ class Parser:
                     self.current_node = self.stack[-1] if self.stack else None
                     self.comma_tracker = True
 
-                elif self.current_node.type == "Sound" or self.current_node.type == "Generate" or self.current_node.type == "Rest":
+                elif self.current_node.type == "Sound" or self.current_node.type == "Rest":
+                    self.current_node.add_child(duration_node)
+                    self.current_node = self.stack[-1] if self.stack else None
+                    self.comma_tracker = True
+                
+                elif self.current_node.type == "Generate":
                     self.current_node.add_child(duration_node)
                     self.stack.pop()
                     self.current_node = self.stack[-1] if self.stack else None
-                    self.comma_tracker = True
+
                 else:
                     self.current_node.add_child(duration_node)
 
@@ -158,11 +169,16 @@ class Parser:
                 # if the current node is concurrent add this node as a child
                 sound_node = Node("Sound", token[1])
                 self.current_node.add_child(sound_node)
-                self.current_node = sound_node
+
+                if self.last_token[0] == 'DESCRIPTION_LITERAL':
+                    print("fixing curr node")
+                    self.current_node = self.stack[-1]
+                else: 
+                    self.current_node = sound_node
                 # self.stack.append(sound_node)
+
             elif token_type == "NOTE_LITERAL" or token_type == "CHORD_LITERAL":
                 value_node = Node("Value", token[1])
-                print(f"value: {token[1]}")
                 self.current_node.add_child(value_node)
 
             elif token_type == "DESCRIPTION_LITERAL":
@@ -208,16 +224,16 @@ class Parser:
 
             self.last_token = token
 
-            #print("tree")
-            # self.print_ast_tree()
-            # print(self.comma_tracker)
-            # print()
-            # print(f"current_node: {self.current_node}")
-            # print("stack after")
-            # for node in self.stack:
-            #     print(node.type)
-            # print()
-            # print("___________________________________")
+            print("tree")
+            self.print_ast_tree()
+            print(self.comma_tracker)
+            print()
+            print(f"current_node: {self.current_node}")
+            print("stack after")
+            for node in self.stack:
+                print(node.type)
+            print()
+            print("___________________________________")
             self.advance()
         else:
             self.error = f"Expected {token_type} ({token_value}), but found {self.current_token}"
