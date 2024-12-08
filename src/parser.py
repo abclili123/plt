@@ -75,8 +75,6 @@ class Parser:
         # consume the current token if it matches, and advance
         if self.match(token_type, token_value):
             token = self.current_token
-            print(f"parsing: {token}")
-            print(f"last tok: {self.last_token}")
 
             # if token_type == tempo, define, play, group
             # it becomes the current node
@@ -115,6 +113,12 @@ class Parser:
                 self.stack.append(group_node)
             elif token_type == "IDENTIFIER":
                 identifier_node = Node("Identifier", token[1])
+
+                if self.last_token[0] == 'IDENTIFIER' and self.comma_tracker == False:
+                    self.comma_tracker = True # reset comma tracker
+                    self.stack.pop()
+                    self.current_node = self.stack[-1] if self.stack else None # set current node to body
+
                 self.current_node.add_child(identifier_node)
 
             elif token_type == "TIME_LITERAL":
@@ -124,10 +128,7 @@ class Parser:
                     self.duration_value = token[1]
             elif token_type == "TYPE_TIME":
                 duration_node = Node("Duration", f"{self.duration_value} {token[1]}")
-                print(self.current_node.type)
-                print(self.stack[-1])
                 if self.current_node.type == "Sound" and self.stack[-1].type == "Concurrent":
-                    print("TRUE BEAN")
                     self.stack[-1].add_child(duration_node)
                     self.stack.pop()
                     self.current_node = self.stack[-1] if self.stack else None
@@ -172,7 +173,7 @@ class Parser:
                     self.comma_tracker = False
                     # if this is the first comma, make a node called concurrent
                     concurrent_node = Node("Concurrent")
-                    if self.last_token[1] == 'IDENTIFIER': # in a group node
+                    if self.last_token[0] == 'IDENTIFIER': # in a group node
                         # the current node is body
                         # move the last child into the concurrent node
                         concurrent_node.add_child(self.current_node.children[-1])
@@ -207,13 +208,16 @@ class Parser:
 
             self.last_token = token
 
-            print("tree")
-            self.print_ast_tree()
-            print(f"current_node: {self.current_node}")
-            print("stack")
-            for node in self.stack:
-                print(node.type)
-            print()
+            #print("tree")
+            # self.print_ast_tree()
+            # print(self.comma_tracker)
+            # print()
+            # print(f"current_node: {self.current_node}")
+            # print("stack after")
+            # for node in self.stack:
+            #     print(node.type)
+            # print()
+            # print("___________________________________")
             self.advance()
         else:
             self.error = f"Expected {token_type} ({token_value}), but found {self.current_token}"
