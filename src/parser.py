@@ -115,15 +115,6 @@ class Parser:
                 self.stack.append(group_node)
             elif token_type == "IDENTIFIER":
                 identifier_node = Node("Identifier", token[1])
-
-                print(self.last_token[0])
-                # if self.last_token[0] != "COMMA" and self.comma_tracker == True:
-                #     self.comma_tracker == False
-                #     # remove concurrent node from the stack
-                #     self.stack.pop()
-                #     # update the current node back to group
-                #     self.current_node = self.stack[-1]
-
                 self.current_node.add_child(identifier_node)
 
             elif token_type == "TIME_LITERAL":
@@ -133,11 +124,23 @@ class Parser:
                     self.duration_value = token[1]
             elif token_type == "TYPE_TIME":
                 duration_node = Node("Duration", f"{self.duration_value} {token[1]}")
-                self.current_node.add_child(duration_node)
-                if self.current_node.type == "Sound" or self.current_node.type == "Generate" or self.current_node.type == "Rest" or self.current_node.type == "Concurrent":
+                print(self.current_node.type)
+                print(self.stack[-1])
+                if self.current_node.type == "Sound" and self.stack[-1].type == "Concurrent":
+                    print("TRUE BEAN")
+                    self.stack[-1].add_child(duration_node)
                     self.stack.pop()
                     self.current_node = self.stack[-1] if self.stack else None
                     self.comma_tracker = True
+
+                elif self.current_node.type == "Sound" or self.current_node.type == "Generate" or self.current_node.type == "Rest":
+                    self.current_node.add_child(duration_node)
+                    self.stack.pop()
+                    self.current_node = self.stack[-1] if self.stack else None
+                    self.comma_tracker = True
+                else:
+                    self.current_node.add_child(duration_node)
+
             elif token_type == "TYPE_PART":
                 type_node = Node("Type", token[1])
                 self.current_node.add_child(type_node)
