@@ -19,6 +19,12 @@ class Parser:
         self.last_token = None
         self.comma_tracker = True
 
+        # verify identifiers
+        self.group_identifiers = [] # these are names of groups
+        self.loop_or_segment_identifiers = [] # these are the names of loops and segments
+        self.play_identifiers = [] # these are idenfiers that follow play statements
+        self.identifiers_in_groups = [] # these are identifiers within group statements
+
         # AST set up
         self.root_node = None
         self.current_node = None
@@ -45,6 +51,16 @@ class Parser:
         if token_value and self.current_token[1] != token_value:
             return False
         return True
+    
+    def verify_identifiers():
+        # traverse the tree
+
+        # if you are at a group node, verify all identifiers in the body are in self.loop_or_segment_identifiers
+
+        # if you are in a play node
+            # if the play node has a body node as a child pass becuase it is defined and played at the same time
+            # else verify all identifiers in the play node are in self.identifiers_in_groups or self.loop_or_segment_identifiers
+        pass
     
     def print_ast_tree(self, node=None, level=0, prefix=""):
         output_string = ""
@@ -126,6 +142,21 @@ class Parser:
                     self.current_node = self.stack[-1] if self.stack else None # set current node to body
 
                 self.current_node.add_child(identifier_node)
+
+                # if current node is a group
+                if self.current_node.type == "Group":
+                    self.group_identifiers.append(identifier_node)
+
+                # if current node is define
+                elif self.current_node.type == "Define":
+                    self.loop_or_segment_identifiers.append(identifier_node)
+
+                # if current node is play
+                elif self.current_node.type == "Play" or self.stack[-2].type == "Play":
+                    self.play_identifiers.append(identifier_node)
+
+                elif self.stack[-2].type == "Group":
+                    self.identifiers_in_groups.append(identifier_node)
 
             elif token_type == "TIME_LITERAL":
                 if isinstance(self.current_node, Node) and self.current_node.type == "Tempo":

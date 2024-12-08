@@ -351,3 +351,19 @@ if __name__ == "__main__":
         parser = Parser(output, parser_output_file)
         parser.parse_program()
         parser.print_ast_tree()
+        print()
+        print("parser.group_identifiers")
+        for g in parser.group_identifiers:
+            print(f"{g}")
+        print()
+        print("parser.ident in groups")
+        for g in parser.identifiers_in_groups:
+            print(f"{g}")
+        print()
+        print("parser.loop_or_segment_identifiers")
+        for g in parser.loop_or_segment_identifiers:
+            print(f"{g}")
+        print()
+        print("parser.play_identifiers")
+        for g in parser.play_identifiers:
+            print(f"{g}")
