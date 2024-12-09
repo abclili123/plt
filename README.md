@@ -4,10 +4,31 @@
 #### Dan Itzer, Liliana Seoror<br>
 
 ### Installation and Execution Instructions<br>
-Ensure the any version of python3 is installed on your machine<br>
+Ensure the lastest version of python3 is installed on your machine<br>
 Ensure the build script has the proper permissions: ```chmod +x build.sh```<br>
-Run the script as ```./build.sh <input_filename> <lexer_output> <parser_output>``` <br>
+You will also require Flask to be installed as the program is run on a local server<br>
+```
+pip install flask
+```
+<br>
+In order to spin up a testing server (make sure you are in the project root directory)<br>
 
+```
+python3 app.py
+```
+
+or <br>
+```
+./build.sh
+```
+<br>
+
+### Usage <br>
+After starting up the local server, navigate to <a ref="http://127.0.0.1:5000">http://127.0.0.1:5000 </a> <br>
+If you get a permissions error, clear cookies or reopen localhost in an incognito tab. <br>
+Paste your example program in the far left textbox, then hit "play"<br>
+Your program will then be compiled and translated into the corresponding sounds using the <a ref="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API"> Web Audio API</a> <br>
+and be played through the browser.
 <br>
 
 ### Context Free Grammar:
