@@ -27,7 +27,8 @@ or <br>
 After starting up the local server, navigate to <a ref="http://127.0.0.1:5000">http://127.0.0.1:5000 </a> <br>
 If you get a permissions error, clear cookies or reopen localhost in an incognito tab. <br>
 Paste your example program in the far left textbox, then hit "play"<br>
-Your program will then be compiled and translated into the corresponding sounds using the <a ref="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API">Web Audio API</a> <br>
+Your program will then be compiled and translated into the corresponding sounds using the 
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API">Web Audio API </a> <br>
 and be played through the browser.
 <br>
 
