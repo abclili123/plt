@@ -32,24 +32,35 @@ def compile():
 
     # lex code
     # i know there is a better way to do this but for now we'll just read the file
-    lexer_output = lexer.lexer('code.prog', lexer_output_file)
+    lexer_output, lex_error = lexer.lexer('code.prog', lexer_output_file)
+    lexer_output_data = ""
     with open(lexer_output_file, 'r') as file:
         lexer_output_data = file.read()
 
-    # create file path for parser output
-    parser_output_file = 'parser_output.txt'
+    parser_output = ""
+    if len(lex_error) == 0:
+        # create file path for parser output
+        parser_output_file = 'parser_output.txt'
 
-    # parse lexer output
-    # touch parser output file
-    parser = Parser(lexer_output, parser_output_file)
-    parser.parse_program()
-    parser.print_ast_tree()
-    with open(parser_output_file, 'r') as file:
-        parser_output = file.read()
+        # parse lexer output
+        # touch parser output file
+        parser = Parser(lexer_output, parser_output_file)
+        parser.parse_program()
 
-    # code generation 
-    generator = Generator()
-    gen_output = generator.generate_code(parser.root_node)
+        if parser.error:
+            for error in parser.errors:
+                parser_output += error
+        
+        else:
+            parser.print_ast_tree()
+            with open(parser_output_file, 'r') as file:
+                parser_output = file.read()
+
+    gen_output = ""
+    if len(lex_error) == 0 and not parser.error:
+        # code generation 
+        generator = Generator()
+        gen_output = generator.generate_code(parser.root_node)
 
     # Send the explanation back as JSON
     return jsonify({

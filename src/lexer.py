@@ -2,6 +2,8 @@ import sys
 from .parser import Parser
 from .code_gen import Generator
 
+error = []
+
 ######## KEYWORDS ########
 KEYWORDS = [
     "define",
@@ -40,6 +42,7 @@ TYPES = {
 def handle_error(buffer):
     # further specifics could be added here to automatically resolve conflicts,
     # however this is just to demonstrate how the lexer will process an unrecognized buffer
+    error.append(f"Error: Unrecognized token '{buffer}'")
     print(f"Error: Unrecognized token '{buffer}'")
 
 def buf_is_digit(buffer):
@@ -356,7 +359,7 @@ def lexer(input_program, output_file=None):
 
         if output_file:
             write_output_to_file(output, output_file)
-        return output
+        return output, error
 
     except FileNotFoundError:
         print(f"Error: The program '{input_program}' was not found.")
