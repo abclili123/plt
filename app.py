@@ -50,23 +50,12 @@ def compile():
     # code generation 
     generator = Generator()
     gen_output = generator.generate_code(parser.root_node)
-   
-    # js code snippet
-    # this is more like the template of the js code,
-    # whatever we want to have output needs to be setup here
-    js_code_output = f""" 
-    const tempo = {gen_output['tempo']};
-    const loops = {json.dumps(gen_output['loops'], indent=2)};
-    const segments = {json.dumps(gen_output['segments'], indent=2)};
-    const groups = {json.dumps(gen_output['groups'], indent=2)};
-    const playSequence = {json.dumps(gen_output['play_sequence'], indent=2)};
-    """
 
     # Send the explanation back as JSON
     return jsonify({
         'lexer': lexer_output_data,
         'parser': parser_output,
-        'generated_code': js_code_output
+        'generated_code': gen_output
     })
 
 # to run the app do python app.py then open the localhost url in chrome
