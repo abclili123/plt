@@ -143,6 +143,7 @@ clicking image removes blur<br>
 
 
 #### Video Tutorial:<br>
-<a href="https://www.youtube.com/watch?v=Qz1vOPhSQWs">link to video </a> 
+** updated for HW3 ** <br>
+<a href="https://www.youtube.com/watch?v=PV4j_QEqGiw">link to video </a> 
 
 

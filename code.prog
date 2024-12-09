@@ -2,7 +2,7 @@ tempo 120
 
 define loop bass_guitar {
     instrument bass 
-    note c 1 beat
+    note d 1 beat
 }
 
 define loop bass_drums {

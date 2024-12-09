@@ -7,7 +7,7 @@
 ('TYPE_INSTRUMENT',)
 ('INSTRUMENT_LITERAL', 'bass')
 ('TYPE_SOUND', 'note')
-('NOTE_LITERAL', 'C4')
+('NOTE_LITERAL', 'D4')
 ('TIME_LITERAL', '1')
 ('TYPE_TIME', 'beat')
 ('CLOSEBRACK',)
