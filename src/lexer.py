@@ -95,7 +95,7 @@ def match_note_literal(buffer):
     if len(buffer) == 1:
         note = buffer[0]
         if note in "ABCDEFGabcdefg":
-            return ("NOTE_LITERAL" , buffer)
+            return ("NOTE_LITERAL" , buffer.upper()+"4")
     
     # if it is two char it can be a note followed be an accidental or an octave
     elif len(buffer) == 2: # a4, a#
@@ -103,7 +103,11 @@ def match_note_literal(buffer):
         accidental = buffer[1] in ['#', 'b']
         octave = buf_is_digit(buffer[1])
         if note and (accidental or octave):
-            return ("NOTE_LITERAL" , buffer)
+            if accidental:
+                value = buffer[0].upper() + buffer[1] + "4"
+            else:
+                value = buffer[0].upper() + buffer[1]
+            return ("NOTE_LITERAL" , value)
     
     # if it is 3 char it can be a note followed be an accidental and an octave
     elif len(buffer) == 3:
@@ -111,7 +115,8 @@ def match_note_literal(buffer):
         accidental = buffer[1] in ['#', 'b']
         octave = buf_is_digit(buffer[2])
         if note and accidental and octave:
-            return ("NOTE_LITERAL" , buffer)
+            value = buffer[0].upper() + buffer[1] + buffer[2]
+            return ("NOTE_LITERAL" , value)
         
     return False
 
@@ -120,7 +125,7 @@ def match_chord_literal(buffer):
     if len(buffer) == 1:
         note = buffer[0]
         if note in "ABCDEFGabcdefg":
-            return ("CHORD_LITERAL" , buffer)
+            return ("CHORD_LITERAL" , buffer.upper() + "4")
     
     # if it is two char it can be a note followed be an accidental or an octave or a minor
     elif len(buffer) == 2: # a4, a#
@@ -129,24 +134,44 @@ def match_chord_literal(buffer):
         octave = buf_is_digit(buffer[1])
         minor = buffer[1] == "m"
         if note and (accidental or octave or minor):
-            return ("CHORD_LITERAL" , buffer)
+            if accidental:
+                value = buffer[0].upper() + buffer[1] + "4"
+            elif minor:
+                value = buffer[0].upper() + "4" + buffer[1]
+            else:
+                value = buffer[0].upper() + buffer[1]
+
+            return ("CHORD_LITERAL" , value)
     
     # if it is 3 char it can be a note followed be 2 of the following accidental, octave, minor
     elif len(buffer) == 3:
         note = buffer[0] in "ABCDEFGabcdefg"
-
         # accidental in 1, octave in 2
         # accidental in 1, minor in 2
         accidental = buffer[1] in ['#', 'b']
         octave = buf_is_digit(buffer[2])
         minor = buffer[2] == "m"
         if note and accidental and (octave or minor):
-            return ("CHORD_LITERAL" , buffer)
+            if minor:
+                value = buffer[0].upper() + buffer[1] + "4" + buffer[2]
+            else: 
+                value = buffer[0].upper() + buffer[1] + buffer [2]
+            return ("CHORD_LITERAL" , value)
         
         # octave in 1, minor in 2
         octave = buf_is_digit(buffer[1])
         if note and octave and minor:
-            return ("CHORD_LITERAL" , buffer)
+            value = buffer[0].upper() + buffer[1] + buffer[2]
+            return ("CHORD_LITERAL" , value)
+    
+    elif len(buffer) == 4:
+        note = buffer[0] in "ABCDEFGabcdefg"
+        accidental = buffer[1] in ['#', 'b']
+        octave = buf_is_digit(buffer[2])
+        minor = buffer[3] == "m"
+        if note and accidental and octave and minor:
+            value = buffer[0].upper() + buffer[1] + buffer[2] + buffer[3]
+            return ("CHORD_LITERAL" , value)
         
     return False
 
